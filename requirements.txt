@@ -4,3 +4,4 @@ flask_socketio
 python-socketio
 eventlet
 gunicorn
+stripe
