@@ -536,4 +536,5 @@ if __name__ == "__main__":
         db.create_all()
         print("Base de datos creada o ya existente.")
     socketio.run(app, host="0.0.0.0")
+# Despliegue forzado para Render
 
