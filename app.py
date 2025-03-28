@@ -9,6 +9,7 @@ stripe.api_key = 'sk_test_51R5DNmR9YTwpr9wxSEVWbiclojlmYkKnkPHarfQSQgWm3PKihaCmO
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///lavamovil.db'
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {"connect_args": {"check_same_thread": False}}
 app.config['SECRET_KEY'] = 'tu_clave_secreta'  # Clave necesaria para las sesiones
 db = SQLAlchemy(app)
 socketio = SocketIO(app)
@@ -528,6 +529,10 @@ def cancelar_solicitud():
 @socketio.on("ubicacion_lavador")
 def handle_ubicacion_lavador(data):
     emit("lavador_ubicacion", data, broadcast=True)
+
+@app.route('/terminos')
+def terminos():
+    return render_template('terminos.html')
 
 if __name__ == "__main__":
     import os
