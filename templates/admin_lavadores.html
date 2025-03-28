@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Lavadores</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: 'Open Sans', sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+    header { background-color: #343a40; color: white; padding: 20px; text-align: center; }
+    .container { max-width: 1000px; margin: 30px auto; padding: 20px; background-color: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    h2 { margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+      text-align: left;
+    }
+    th { background-color: #007bff; color: white; }
+    tr:nth-child(even) { background-color: #f9f9f9; }
+    form { display: inline; }
+    button {
+      background-color: #28a745;
+      color: white;
+      padding: 6px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover { background-color: #218838; }
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      text-decoration: none;
+      background-color: #6c757d;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 5px;
+    }
+    .back-link:hover {
+      background-color: #5a6268;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Lavadores Registrados</h1>
+  </header>
+  <div class="container">
+    <h2>Lista de Lavadores</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Suscripción</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+  {% for lavador in lavadores %}
+  <tr>
+    <td>{{ lavador.nombre }}</td> 
+    <td>{{ '✅ Activa' if lavador.suscrito else '❌ Inactiva' }}</td> 
+    <td>
+      {% if lavador.suscrito %}
+      <form action="{{ url_for('desactivar_suscripcion') }}" method="post" style="display:inline;">
+        <input type="hidden" name="user_id" value="{{ lavador.id }}">
+        <button type="submit" style="background-color: crimson; color: white; border: none; padding: 5px 10px; border-radius: 4px;">Desactivar</button>
+      </form>
+      {% else %}
+      <form action="{{ url_for('activar_suscripcion') }}" method="post" style="display:inline;">
+        <input type="hidden" name="user_id" value="{{ lavador.id }}">
+        <button type="submit" style="background-color: #28a745; color: white; border: none; padding: 5px 10px; border-radius: 4px;">Activar</button>
+      </form>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</tbody>
+</table>
+
+<div style="text-align: center; margin-top: 20px;">
+  <a class="back-link" href="{{ url_for('admin_dashboard') }}">⬅ Volver al Panel</a> 
+</div>
+</body>
+</html>

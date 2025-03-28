@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Login - LavaMóvil</title>
+  <!-- Cargar la fuente Open Sans desde Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 0;
+    }
+    .login-container {
+      width: 300px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .login-container h2 {
+      text-align: center;
+      color: #007BFF;
+    }
+    .login-container input,
+    .login-container select,
+    .login-container button {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .login-container button {
+      background-color: #007BFF;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    .login-container button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h2>Inicia sesión</h2>
+    <form action="/login" method="post">
+      <input type="text" name="nombre" placeholder="Correo o Nombre" required>
+      <!-- Agregamos el selector de rol -->
+      <select name="rol" required>
+        <option value="" disabled selected>Selecciona tu rol</option>
+        <option value="cliente">Cliente</option>
+        <option value="lavador">Lavador</option>
+        <option value="admin">Administrador</option>
+      </select>
+      <button type="submit">Entrar</button>
+    </form>
+    <p style="text-align:center;">¿No tienes cuenta? <a href="/register">Regístrate</a></p>
+  </div>
+</body>
+</html>

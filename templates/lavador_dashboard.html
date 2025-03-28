@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Lavador - LavaMóvil</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial, sans-serif; background: #f9f9f9; padding: 20px; }
+    h1 { color: #007BFF; }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .info { margin-top: 10px; }
+    .btn {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 24px;
+      background-color: #28A745;
+      color: white;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 16px;
+    }
+    .btn:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Bienvenido, {{ user.nombre }}</h1>
+    <h3 style="color: green;">ID de usuario: {{ user.id }}</h3>
+    <div class="info">
+      <p><strong>Teléfono:</strong> {{ user.telefono or 'No disponible' }}</p>
+      <p><strong>Dirección:</strong> {{ user.direccion or 'No disponible' }}</p>
+      <p><strong>Descripción:</strong> {{ user.descripcion or 'No disponible' }}</p>
+      <p><strong>Estado de suscripción:</strong>
+        {% if user.suscrito %}
+          ✅ Activo
+          <br>
+          <a class="btn" href="{{ url_for('lavador_trabajo') }}">Ir al panel de trabajo</a>
+        {% else %}
+          ❌ Inactivo
+        {% endif %}
+      </p>
+    </div>
+  </div>
+</body>
+</html>

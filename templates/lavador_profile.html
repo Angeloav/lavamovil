@@ -1,0 +1,48 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Perfil del Lavador - LavaMóvil</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial, sans-serif; background: #f2f2f2; padding: 20px; }
+    .form-container {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 { color: #007BFF; }
+    input, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #28A745;
+      color: white;
+      border: none;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h2>Completa tu perfil</h2>
+    <form method="post" action="{{ url_for('lavador_perfil') }}">
+      <input type="text" name="telefono" placeholder="Teléfono" value="{{ user.telefono or '' }}" required>
+      <input type="text" name="direccion" placeholder="Dirección" value="{{ user.direccion or '' }}" required>
+      <input type="text" name="id_personal" placeholder="Cédula o ID personal" value="{{ user.id_personal or '' }}" required>
+      <textarea name="descripcion" placeholder="Descripción del servicio" required>{{ user.descripcion or '' }}</textarea>
+      <button type="submit">Guardar</button>
+    </form>
+  </div>
+</body>
+</html>

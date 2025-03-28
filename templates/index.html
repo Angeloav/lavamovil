@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - LavaMóvil</title>
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBmVCNKb_sjx-vE5b1YoJpPUgm8Ub09ElE"></script>
+  <style>
+    body { margin: 0; padding: 0; font-family: 'Open Sans', sans-serif; }
+    header { background: #007BFF; color: #fff; padding: 15px; text-align: center; }
+    #map { height: 60vh; width: 100%; }
+    .container { padding: 10px; max-width: 800px; margin: auto; }
+    #solicitar-btn { display: block; margin: 20px auto; padding: 10px 20px; background: #007BFF; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+    #solicitar-btn:hover { background: #0056b3; }
+    #notificaciones { margin: 20px 0; background: #fff; padding: 10px; border-radius: 4px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
+    #solicitudes-list { list-style: none; padding: 0; }
+    #solicitudes-list li { padding: 8px; border-bottom: 1px solid #ddd; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Bienvenido a LavaMóvil</h1>
+  </header>
+
+  <div class="container">
+    <div id="map"></div>
+    <button id="solicitar-btn">Solicitar Lavado</button>
+    <div id="notificaciones">
+      <h3>Solicitudes Recibidas:</h3>
+      <ul id="solicitudes-list"></ul>
+    </div>
+  </div>
+
+  </div>
+
+<script>
+  let map;
+  function initMap() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(pos => {
+        const center = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        map = new google.maps.Map(document.getElementById('map'), { center, zoom: 12 });
+        new google.maps.Marker({ position: center, map, title: 'Tu ubicación actual' });
+      }, () => alert('Error: no se pudo obtener tu ubicación.'));
+    } else alert('Geolocalización no soportada.');
+  }
+  window.onload = initMap;
+</script>
+
+<script>
+  function enviarUbicacion() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(pos => {
+        fetch('/guardar_ubicacion', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude
+            tipo: 'cliente'
+          })
+        });
+      });
+    }
+  }
+
+  setInterval(enviarUbicacion, 5000);
+</script>
+
+<script>
+  let marcadorOtroUsuario;
+
+  function actualizarUbicacionOtroUsuario() {
+    fetch('/obtener_ubicacion?tipo=lavador')
+      .then(res => res.json())
+      .then(data => {
+        if (data.lat && data.lng) {
+          const posicion = { lat: data.lat, lng: data.lng };
+          if (!marcadorOtroUsuario) {
+            marcadorOtroUsuario = new google.maps.Marker({
+              position: posicion,
+              map: map,
+              icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+              title: 'Otro usuario'
+            });
+          } else {
+            marcadorOtroUsuario.setPosition(posicion);
+          }
+        }
+      });
+  }
+
+  setInterval(actualizarUbicacionOtroUsuario, 5000);
+</script>
+
+<script>
+  document.getElementById('solicitar-btn').onclick = () => {
+    navigator.geolocation.getCurrentPosition(pos => {
+      fetch('/solicitar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cliente_id: 1,
+          latitud: pos.coords.latitude,
+          longitud: pos.coords.longitude
+        })
+      })
+      .then(res => res.json())
+      .then(data => alert(`Solicitud creada: ${data.mensaje}`))
+      .catch(console.error);
+    });
+  };
+
+  const socket = io();
+  socket.on('nueva_solicitud', data => {
+    const li = document.createElement('li');
+    li.textContent = `Solicitud #${data.solicitud_id} en (${data.latitud.toFixed(4)}, ${data.longitud.toFixed(4)})`;
+    document.getElementById('solicitudes-list').appendChild(li);
+    if (map) new google.maps.Marker({ position: { lat: data.latitud, lng: data.longitud }, map, title: `Solicitud #${data.solicitud_id}` });
+  });
+</script>
+</body>
+</html>        
