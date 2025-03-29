@@ -11,6 +11,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///lavamovil.db'
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {"connect_args": {"check_same_thread": False}}
 app.config['SECRET_KEY'] = 'tu_clave_secreta'  # Clave necesaria para las sesiones
+app.config['MAX_CONTENT_LENGTH'] = 3 * 1024 * 1024  # 3 MB máximo
 db = SQLAlchemy(app)
 socketio = SocketIO(app)
 
@@ -547,7 +548,7 @@ def admin_estadisticas():
     clientes = Usuario.query.filter_by(rol='cliente').count()
     solicitudes_totales = Solicitud.query.count()
     solicitudes_activas = Solicitud.query.filter_by(estado='pendiente').count()
-    
+
     return render_template('admin_estadisticas.html',
                            lavadores=lavadores,
                            clientes=clientes,
