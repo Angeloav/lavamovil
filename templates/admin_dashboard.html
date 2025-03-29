@@ -112,10 +112,17 @@
       <h2>🙋 Clientes Registrados</h2>
       <a href="{{ url_for('admin_clientes') }}">Gestionar Clientes</a>
     </div>
+
     <div class="card">
       <h2>📄 Solicitudes de Servicios</h2>
       <a href="{{ url_for('admin_solicitudes') }}">Ver Solicitudes</a>
     </div>
+
+    <div class="card">
+      <h2>📊 Ver Estadísticas en Vivo</h2>
+      <a href="{{ url_for('admin_estadisticas') }}">Ir al Panel de Estadísticas</a>
+    </div>
+    
     <div class="card">
       <h2>🚪 Cerrar Sesión</h2>
       <a href="{{ url_for('logout') }}">Cerrar Sesión</a>

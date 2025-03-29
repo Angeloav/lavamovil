@@ -534,6 +534,19 @@ def handle_ubicacion_lavador(data):
 def terminos():
     return render_template('terminos.html')
 
+@app.route('/admin_estadisticas')
+def admin_estadisticas():
+    lavadores = Usuario.query.filter_by(rol='lavador').count()
+    clientes = Usuario.query.filter_by(rol='cliente').count()
+    solicitudes_totales = Solicitud.query.count()
+    solicitudes_activas = Solicitud.query.filter_by(estado='pendiente').count()
+    
+    return render_template('admin_estadisticas.html',
+                           lavadores=lavadores,
+                           clientes=clientes,
+                           solicitudes_totales=solicitudes_totales,
+                           solicitudes_activas=solicitudes_activas)
+
 if __name__ == "__main__":
     import os
     print("Directorio actual:", os.getcwd())

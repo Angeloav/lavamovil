@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Estadísticas - LavaMóvil</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #007bff;
+    }
+    .stat {
+      margin: 20px 0;
+      font-size: 18px;
+      padding: 10px;
+      background-color: #e9f3ff;
+      border-radius: 8px;
+    }
+    a {
+      display: block;
+      text-align: center;
+      margin-top: 30px;
+      text-decoration: none;
+      color: #007bff;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📊 Estadísticas en Vivo</h1>
+
+    <div class="stat">👤 Lavadores registrados: <strong>{{ lavadores }}</strong></div>
+    <div class="stat">🙋 Clientes registrados: <strong>{{ clientes }}</strong></div>
+    <div class="stat">📄 Solicitudes totales: <strong>{{ solicitudes_totales }}</strong></div>
+    <div class="stat">🟡 Solicitudes activas: <strong>{{ solicitudes_activas }}</strong></div>
+
+    <a href="{{ url_for('admin_dashboard') }}">⬅️ Volver al panel admin</a>
+  </div>
+</body>
+</html>
