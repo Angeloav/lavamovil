@@ -568,7 +568,9 @@ def subir_bauche():
     if archivo:
         filename = secure_filename(archivo.filename)
         fecha = datetime.now().strftime("%Y%m%d%H%M%S")
-        ruta_guardado = os.path.join('static/bauches', f"{fecha}_{filename}")
+        carpeta = os.path.join('static', 'bauches')
+        os.makedirs(carpeta, exist_ok=True)  # 🔥 Asegura que la carpeta exista
+        ruta_guardado = os.path.join(carpeta, f"{fecha}_{filename}")
         archivo.save(ruta_guardado)
 
         # Agregar notificación para el admin (nombre de archivo)

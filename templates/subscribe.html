@@ -50,16 +50,31 @@
     <h2>Suscripción Manual para Lavadores</h2>
     <p>Realiza un depósito a la siguiente cuenta para activar tu cuenta como lavador:</p>
     <ul>
-      <li><strong>Banco:</strong> Banco Ejemplo</li>
-      <li><strong>Nombre:</strong> Angelo P.</li>
-      <li><strong>Número de cuenta:</strong> 123-456-789</li>
+      <li><strong>Banco:</strong> Banco Ademi</li>
+      <li><strong>Nombre:</strong> Angelo Abreu.</li>
+      <li><strong>Número de cuenta:</strong> 20050919566947</li>
     </ul>
 
-    <form action="{{ url_for('subir_bauche') }}" method="POST" enctype="multipart/form-data">
-      <label for="bauche">Sube una foto del comprobante (bauche):</label><br>
-      <input type="file" name="bauche" accept="image/*" capture="environment" required><br>
-      <button type="submit">Enviar Comprobante</button>
-    </form>
+    @app.route('/subir_bauche', methods=['POST'])
+def subir_bauche():
+    if 'bauche' not in request.files:
+        return "No se subió ningún archivo", 400
+
+    archivo = request.files['bauche']
+    if archivo.filename == '':
+        return "Archivo inválido", 400
+
+    if archivo:
+        filename = secure_filename(archivo.filename)
+        fecha = datetime.now().strftime("%Y%m%d%H%M%S")
+        ruta_guardado = os.path.join('static/bauches', f"{fecha}_{filename}")
+        archivo.save(ruta_guardado)
+
+        # Agregar notificación para el admin (nombre de archivo)
+        bauches_pendientes.append(ruta_guardado)
+
+        return redirect(url_for('subscribe', enviado='ok'))
+
  
   </div>
 </body>
