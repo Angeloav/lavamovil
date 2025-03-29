@@ -1,8 +1,14 @@
 from flask import Flask, request, jsonify, render_template, redirect, url_for, session
-ubicaciones_en_memoria = {}
 from flask_sqlalchemy import SQLAlchemy
 from flask_socketio import SocketIO, emit
+from werkzeug.utils import secure_filename
+from datetime import datetime
 import stripe
+import os
+
+bauches_pendientes = []  # ✅ Aquí está bien
+
+ubicaciones_en_memoria = {}
 
 # Configura Stripe con tu clave secreta (reemplaza 'tu_stripe_secret_key' con tu clave real)
 stripe.api_key = 'sk_test_51R5DNmR9YTwpr9wxSEVWbiclojlmYkKnkPHarfQSQgWm3PKihaCmOjZlvqcDnJ8HWWWMEWPUzzpzpFJ9IkVmI9my00KzxeOvRb'
