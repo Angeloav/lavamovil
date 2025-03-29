@@ -40,11 +40,6 @@
   </style>
 </head>
 <body>
-{% if mensaje == 'ok' %}
-  <p style="color: green; text-align: center; font-weight: bold;">
-    ✅ Comprobante enviado correctamente. Espera aprobación.
-  </p>
-{% endif %}
 
   <div class="container">
     <h2>Suscripción Manual para Lavadores</h2>
@@ -54,6 +49,19 @@
       <li><strong>Nombre:</strong> Angelo Abreu.</li>
       <li><strong>Número de cuenta:</strong> 20050919566947</li>
     </ul>
+    
+    <form action="{{ url_for('subir_bauche') }}" method="POST" enctype="multipart/form-data">
+      <label for="bauche"><strong>Sube una foto del comprobante:</strong></label><br>
+      <input type="file" name="bauche" accept="image/*" capture="environment" required><br><br>
+      <button type="submit">📤 Enviar Comprobante</button>
+    </form>
+
+    {% if request.args.get('enviado') == 'ok' %}
+      <p style="color: green; text-align: center; font-weight: bold;">
+        ✅ Comprobante enviado correctamente. Espera aprobación.
+      </p>
+    {% endif %}
+
   </div>
 </body>
 </html>
