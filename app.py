@@ -605,6 +605,45 @@ from datetime import datetime
 
 bauches_pendientes = []
 
+@app.route('/ver_bauches')
+def ver_bauches():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user = db.session.get(Usuario, session['user_id'])
+    if user.rol != 'admin':
+        return "Acceso denegado", 403
+
+    # Mostrar los bauches pendientes con su nombre (tomado del nombre del archivo)
+    bauches = []
+    carpeta = os.path.join('static', 'bauches')
+    if os.path.exists(carpeta):
+        for nombre_archivo in os.listdir(carpeta):
+            ruta = os.path.join(carpeta, nombre_archivo)
+            nombre_usuario = nombre_archivo.split("_", 1)[-1].split(".")[0]
+            bauches.append((ruta, nombre_usuario))
+    return render_template('ver_bauches.html', bauches=bauches)
+
+@app.route('/aprobar_bauche', methods=['POST'])
+def aprobar_bauche():
+    ruta = request.form.get('ruta')
+    nombre = request.form.get('nombre')
+    if ruta and nombre:
+        usuario = Usuario.query.filter_by(nombre=nombre).first()
+        if usuario:
+            usuario.suscrito = True
+            db.session.commit()
+        if os.path.exists(ruta):
+            os.remove(ruta)
+    return redirect(url_for('ver_bauches'))
+
+@app.route('/rechazar_bauche', methods=['POST'])
+def rechazar_bauche():
+    ruta = request.form.get('ruta')
+    if ruta and os.path.exists(ruta):
+        os.remove(ruta)
+    return redirect(url_for('ver_bauches'))
+
 if __name__ == "__main__":
     import os
     print("Directorio actual:", os.getcwd())

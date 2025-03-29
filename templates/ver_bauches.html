@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Comprobantes Pendientes</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f4f4f4;
+      padding: 30px;
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    .bauche-box {
+      background: white;
+      padding: 20px;
+      margin: 20px auto;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    img {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+    .acciones button {
+      margin: 0 10px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .aprobar {
+      background-color: #28a745;
+      color: white;
+    }
+    .rechazar {
+      background-color: crimson;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h2>📥 Comprobantes Pendientes</h2>
+
+  {% if bauches %}
+    {% for ruta, nombre in bauches %}
+    <div class="bauche-box">
+      <img src="{{ url_for('static', filename=ruta.split('static/')[1]) }}" alt="Comprobante">
+      <p><strong>Usuario:</strong> {{ nombre }}</p>
+      <div class="acciones">
+        <form action="{{ url_for('aprobar_bauche') }}" method="POST" style="display:inline;">
+          <input type="hidden" name="ruta" value="{{ ruta }}">
+          <input type="hidden" name="nombre" value="{{ nombre }}">
+          <button type="submit" class="aprobar">✅ Aprobar</button>
+        </form>
+        <form action="{{ url_for('rechazar_bauche') }}" method="POST" style="display:inline;">
+          <input type="hidden" name="ruta" value="{{ ruta }}">
+          <button type="submit" class="rechazar">❌ Rechazar</button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <p style="text-align:center; color: gray;">No hay comprobantes pendientes.</p>
+  {% endif %}
+</body>
+</html>
