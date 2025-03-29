@@ -40,6 +40,12 @@
   </style>
 </head>
 <body>
+{% if request.args.get('enviado') == 'ok' %}
+  <p style="color: green; text-align: center; font-weight: bold;">
+    ✅ Comprobante enviado correctamente. Espera aprobación.
+  </p>
+{% endif %}
+
   <div class="container">
     <h2>Suscripción Manual para Lavadores</h2>
     <p>Realiza un depósito a la siguiente cuenta para activar tu cuenta como lavador:</p>

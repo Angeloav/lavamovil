@@ -536,22 +536,13 @@ def terminos():
 
 @app.route('/admin_estadisticas')
 def admin_estadisticas():
-    lavadores = Usuario.query.filter_by(rol='lavador').count()
-    clientes = Usuario.query.filter_by(rol='cliente').count()
-    solicitudes_totales = Solicitud.query.count()
-    solicitudes_activas = Solicitud.query.filter_by(estado='pendiente').count()
-    
-    return render_template('admin_estadisticas.html',
-                           lavadores=lavadores,
-                           clientes=clientes,
-                           solicitudes_totales=solicitudes_totales,
-                           solicitudes_activas=solicitudes_activas)
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
 
-from werkzeug.utils import secure_filename
-import os
-from datetime import datetime
+    user = db.session.get(Usuario, session['user_id'])
+    if user.rol != 'admin':
+        return "Acceso denegado", 403
 
-bauches_pendientes = []
 
 @app.route('/subir_bauche', methods=['POST'])
 def subir_bauche():
@@ -571,7 +562,7 @@ def subir_bauche():
         # Agregar notificación para el admin (nombre de archivo)
         bauches_pendientes.append(ruta_guardado)
 
-        return "✅ Comprobante enviado correctamente. Será revisado por el administrador."
+        return redirect(url_for('subscribe', enviado='ok'))
 
 @app.route('/admin/bauche/aprobar', methods=['POST'])
 def aprobar_bauche():
