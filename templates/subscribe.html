@@ -1,67 +1,60 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Suscríbete – LavaMóvil</title>
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
+  <title>Suscripción Lavador</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      font-family: 'Open Sans', sans-serif;
-      background-color: #f2f2f2;
-      margin: 0;
-      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
     }
     .container {
-      max-width: 360px;
-      margin: 80px auto;
-      padding: 20px;
-      background-color: #fff;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      text-align: center;
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
     h2 {
-      color: #007BFF;
-      margin-bottom: 16px;
+      color: #007bff;
     }
-    p {
-      font-size: 16px;
-      line-height: 1.5;
-      margin-bottom: 24px;
+    input[type="file"] {
+      margin-top: 10px;
+      margin-bottom: 20px;
     }
     button {
-      padding: 12px 24px;
-      font-size: 16px;
-      background-color: #007BFF;
-      color: #fff;
+      padding: 10px 20px;
+      background-color: #28a745;
+      color: white;
       border: none;
-      border-radius: 4px;
+      border-radius: 8px;
+      font-size: 16px;
       cursor: pointer;
     }
     button:hover {
-      background-color: #0056b3;
-    }
-    a {
-      display: block;
-      margin-top: 16px;
-      color: #007BFF;
-      text-decoration: none;
-    }
-    a:hover {
-      text-decoration: underline;
+      background-color: #218838;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>Suscríbete a LavaMóvil</h2>
-    <p>Para recibir solicitudes de lavado, se requiere una suscripción mensual de <strong>$5</strong> (pago fuera de la app).</p>
-    <form action="/create-checkout-session" method="post">
-      <button type="submit">Suscribirse</button>
+    <h2>Suscripción Manual para Lavadores</h2>
+    <p>Realiza un depósito a la siguiente cuenta para activar tu cuenta como lavador:</p>
+    <ul>
+      <li><strong>Banco:</strong> Banco Ejemplo</li>
+      <li><strong>Nombre:</strong> Angelo P.</li>
+      <li><strong>Número de cuenta:</strong> 123-456-789</li>
+    </ul>
+
+    <form action="{{ url_for('subir_bauche') }}" method="POST" enctype="multipart/form-data">
+      <label for="bauche">Sube una foto del comprobante (bauche):</label><br>
+      <input type="file" name="bauche" accept="image/*" required><br>
+      <button type="submit">Enviar Comprobante</button>
     </form>
-    <a href="{{ url_for('lavador_dashboard') }}">Volver al Dashboard</a>
   </div>
 </body>
 </html>
+

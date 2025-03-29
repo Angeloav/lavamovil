@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Bauches Pendientes</title>
+  <style>
+    body { font-family: Arial; background: #f0f0f0; padding: 20px; }
+    .bauche-box {
+      background: white;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+    form {
+      display: inline-block;
+      margin-top: 10px;
+    }
+    button {
+      padding: 8px 16px;
+      margin-right: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .aprobar {
+      background-color: #28a745;
+      color: white;
+    }
+    .rechazar {
+      background-color: crimson;
+      color: white;
+    }
+    a {
+      text-decoration: none;
+      color: #007bff;
+    }
+  </style>
+</head>
+<body>
+  <h1>📥 Comprobantes Subidos</h1>
+
+  {% if bauches %}
+    {% for bauche in bauches %}
+      <div class="bauche-box">
+        <img src="{{ url_for('static', filename=bauche.split('static/')[1]) }}" alt="Comprobante">
+        <p><strong>Ruta:</strong> {{ bauche }}</p>
+        <form action="{{ url_for('aprobar_bauche') }}" method="post">
+          <input type="hidden" name="ruta" value="{{ bauche }}">
+          <button class="aprobar" type="submit">✅ Aprobar</button>
+        </form>
+        <form action="{{ url_for('rechazar_bauche') }}" method="post">
+          <input type="hidden" name="ruta" value="{{ bauche }}">
+          <button class="rechazar" type="submit">❌ Rechazar</button>
+        </form>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No hay comprobantes pendientes por ahora.</p>
+  {% endif %}
+
+  <p><a href="{{ url_for('admin_dashboard') }}">⬅️ Volver al panel admin</a></p>
+</body>
+</html>

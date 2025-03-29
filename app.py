@@ -547,6 +547,48 @@ def admin_estadisticas():
                            solicitudes_totales=solicitudes_totales,
                            solicitudes_activas=solicitudes_activas)
 
+from werkzeug.utils import secure_filename
+import os
+from datetime import datetime
+
+bauches_pendientes = []
+
+@app.route('/subir_bauche', methods=['POST'])
+def subir_bauche():
+    if 'bauche' not in request.files:
+        return "No se subió ningún archivo", 400
+
+    archivo = request.files['bauche']
+    if archivo.filename == '':
+        return "Archivo inválido", 400
+
+    if archivo:
+        filename = secure_filename(archivo.filename)
+        fecha = datetime.now().strftime("%Y%m%d%H%M%S")
+        ruta_guardado = os.path.join('static/bauches', f"{fecha}_{filename}")
+        archivo.save(ruta_guardado)
+
+        # Agregar notificación para el admin (nombre de archivo)
+        bauches_pendientes.append(ruta_guardado)
+
+        return "✅ Comprobante enviado correctamente. Será revisado por el administrador."
+
+@app.route('/admin/bauche/aprobar', methods=['POST'])
+def aprobar_bauche():
+    ruta = request.form.get('ruta')
+    if ruta in bauches_pendientes:
+        bauches_pendientes.remove(ruta)
+        # Aquí luego puedes activar al lavador manualmente si lo deseas
+    return redirect(url_for('ver_bauches'))
+
+@app.route('/admin/bauche/rechazar', methods=['POST'])
+def rechazar_bauche():
+    ruta = request.form.get('ruta')
+    if ruta in bauches_pendientes:
+        bauches_pendientes.remove(ruta)
+        # También podrías borrar el archivo si lo deseas
+    return redirect(url_for('ver_bauches'))
+
 if __name__ == "__main__":
     import os
     print("Directorio actual:", os.getcwd())
