@@ -51,9 +51,10 @@
 
     <form action="{{ url_for('subir_bauche') }}" method="POST" enctype="multipart/form-data">
       <label for="bauche">Sube una foto del comprobante (bauche):</label><br>
-      <input type="file" name="bauche" accept="image/*" required><br>
+      <input type="file" name="bauche" accept="image/*" capture="environment" required><br>
       <button type="submit">Enviar Comprobante</button>
     </form>
+ 
   </div>
 </body>
 </html>
