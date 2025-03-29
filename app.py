@@ -543,6 +543,16 @@ def admin_estadisticas():
     if user.rol != 'admin':
         return "Acceso denegado", 403
 
+    lavadores = Usuario.query.filter_by(rol='lavador').count()
+    clientes = Usuario.query.filter_by(rol='cliente').count()
+    solicitudes_totales = Solicitud.query.count()
+    solicitudes_activas = Solicitud.query.filter_by(estado='pendiente').count()
+    
+    return render_template('admin_estadisticas.html',
+                           lavadores=lavadores,
+                           clientes=clientes,
+                           solicitudes_totales=solicitudes_totales,
+                           solicitudes_activas=solicitudes_activas)
 
 @app.route('/subir_bauche', methods=['POST'])
 def subir_bauche():
@@ -579,6 +589,11 @@ def rechazar_bauche():
         bauches_pendientes.remove(ruta)
         # También podrías borrar el archivo si lo deseas
     return redirect(url_for('ver_bauches'))
+
+from werkzeug.utils import secure_filename
+from datetime import datetime
+
+bauches_pendientes = []
 
 if __name__ == "__main__":
     import os
