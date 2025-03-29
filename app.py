@@ -219,7 +219,8 @@ def subscribe():
         user.suscrito = True
         db.session.commit()
         return redirect(url_for('dashboard'))
-    return render_template('subscribe.html', user=user)
+    mensaje = request.args.get('enviado')
+    return render_template('subscribe.html', user=user, mensaje=mensaje)
 
 @app.route('/lavador_perfil', methods=['GET', 'POST'])
 def lavador_perfil():
