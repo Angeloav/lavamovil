@@ -54,28 +54,6 @@
       <li><strong>Nombre:</strong> Angelo Abreu.</li>
       <li><strong>Número de cuenta:</strong> 20050919566947</li>
     </ul>
-
-    @app.route('/subir_bauche', methods=['POST'])
-def subir_bauche():
-    if 'bauche' not in request.files:
-        return "No se subió ningún archivo", 400
-
-    archivo = request.files['bauche']
-    if archivo.filename == '':
-        return "Archivo inválido", 400
-
-    if archivo:
-        filename = secure_filename(archivo.filename)
-        fecha = datetime.now().strftime("%Y%m%d%H%M%S")
-        ruta_guardado = os.path.join('static/bauches', f"{fecha}_{filename}")
-        archivo.save(ruta_guardado)
-
-        # Agregar notificación para el admin (nombre de archivo)
-        bauches_pendientes.append(ruta_guardado)
-
-        return redirect(url_for('subscribe', enviado='ok'))
-
- 
   </div>
 </body>
 </html>
