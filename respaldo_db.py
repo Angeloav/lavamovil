@@ -1,17 +1,16 @@
-import shutil
-import datetime
 import os
+import shutil
+from datetime import datetime
 
-# Crear carpeta 'respaldos' si no existe
-os.makedirs("respaldos", exist_ok=True)
-
-# Ruta original de tu base de datos
-origen = "lavamovil.db"
-
-# Nombre del archivo de respaldo con fecha automática
-fecha = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-destino = os.path.join("respaldos", f"respaldo_lavamovil_{fecha}.db")
-
-# Realiza la copia
-shutil.copy2(origen, destino)
-print(f"✅ Respaldo guardado como: {destino}")
+def crear_respaldo():
+    carpeta = "respaldos"
+    os.makedirs(carpeta, exist_ok=True)
+    
+    fecha = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    nombre_respaldo = f"{carpeta}/respaldo_lavamovil_{fecha}.db"
+    
+    if os.path.exists("lavamovil.db"):
+        shutil.copy("lavamovil.db", nombre_respaldo)
+        print(f"✅ Respaldo guardado como: {nombre_respaldo}")
+    else:
+        print("⚠️ Archivo lavamovil.db no encontrado para respaldo.")

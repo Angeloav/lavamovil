@@ -21,6 +21,7 @@ socketio = SocketIO(app)
 class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(80), unique=True, nullable=False)
+    apellido = db.Column(db.String(80), nullable=True)
     rol = db.Column(db.String(20))  # 'cliente' o 'lavador'
     suscrito = db.Column(db.Boolean, default=False)  # Solo para lavadores
     descripcion = db.Column(db.Text, default="")     # Breve descripción o presentación
@@ -131,10 +132,10 @@ def register():
         if existing_user:
             return "El nombre de usuario ya existe. Por favor, elige otro.", 400
 
-        nuevo_usuario = Usuario(nombre=nombre_completo, rol=rol)
+        nuevo_usuario = Usuario(nombre=nombre, apellido=apellido, rol=rol)
         db.session.add(nuevo_usuario)
         db.session.commit()
-
+       
         socketio.emit('nuevo_registro', {'nombre': nuevo_usuario.nombre})
         return redirect(url_for('login'))
 
@@ -629,9 +630,9 @@ def aprobar_bauche():
     return redirect(url_for('ver_bauches'))
 
 from respaldo_db import crear_respaldo
-crear_respaldo()
 
 if __name__ == "__main__":
+    crear_respaldo()
     import os
     print("Directorio actual:", os.getcwd())
     with app.app_context():
