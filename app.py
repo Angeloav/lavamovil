@@ -608,6 +608,12 @@ def aprobar_bauche():
         if usuario:
             usuario.suscrito = True
             db.session.commit()
+            # 🔔 Notificar al lavador si está conectado
+            socketio.emit('notificacion', {
+                'usuario': usuario.nombre.strip().lower(),
+                'mensaje': '✅ Tu comprobante fue aprobado. Ya puedes trabajar.'
+            }, broadcast=True)
+
         if os.path.exists(ruta):
             os.remove(ruta)
     return redirect(url_for('ver_bauches'))
