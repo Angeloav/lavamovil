@@ -629,6 +629,20 @@ def aprobar_bauche():
             os.remove(ruta)
     return redirect(url_for('ver_bauches'))
 
+@app.route('/admin/reset_db')
+def reset_db():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user = db.session.get(Usuario, session['user_id'])
+    if not user or user.rol != 'admin':
+        return "Acceso denegado", 403
+
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
+    return "✅ Base de datos reiniciada correctamente (modo prueba)"
+
 from respaldo_db import crear_respaldo
 
 if __name__ == "__main__":
