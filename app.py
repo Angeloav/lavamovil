@@ -119,19 +119,25 @@ def dashboard():
 def register():
     if request.method == 'POST':
         nombre = request.form.get('nombre')
+        apellido = request.form.get('apellido')
         rol = request.form.get('rol')
-        if not nombre or not rol:
+
+        if not nombre or not apellido or not rol:
             return "Faltan datos", 400
-        existing_user = Usuario.query.filter_by(nombre=nombre).first()
+
+        nombre_completo = f"{nombre.strip()} {apellido.strip()}"
+
+        existing_user = Usuario.query.filter_by(nombre=nombre_completo).first()
         if existing_user:
             return "El nombre de usuario ya existe. Por favor, elige otro.", 400
-        nuevo_usuario = Usuario(nombre=nombre, rol=rol)
+
+        nuevo_usuario = Usuario(nombre=nombre_completo, rol=rol)
         db.session.add(nuevo_usuario)
         db.session.commit()
 
         socketio.emit('nuevo_registro', {'nombre': nuevo_usuario.nombre})
-
         return redirect(url_for('login'))
+
     return render_template('register.html')
 
 @app.route('/aceptar', methods=['POST'])
@@ -214,13 +220,17 @@ def historial():
 def subscribe():
     if 'user_id' not in session:
         return redirect(url_for('login'))
+
     user = db.session.get(Usuario, session['user_id'])
-    if user.rol.lower().strip() != 'lavador':
-        return "Solo los lavadores pueden suscribirse.", 403
+    if not user or user.rol.lower().strip() != 'lavador':
+        session.clear()
+        return redirect(url_for('login'))
+
     if request.method == 'POST':
         user.suscrito = True
         db.session.commit()
         return redirect(url_for('dashboard'))
+
     mensaje = request.args.get('enviado')
     return render_template('subscribe.html', user=user, mensaje=mensaje)
 
