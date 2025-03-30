@@ -53,19 +53,18 @@
     {% for ruta, nombre in bauches %}
     <div class="bauche-box">
       <img src="{{ url_for('static', filename=ruta.split('static/')[1]) }}" alt="Comprobante">
-      <p><strong>Usuario:</strong> {{ nombre }}</p>
+      <p><strong>Usuario:</strong> {{ nombre }}</p> 
       <div class="acciones">
         <form action="{{ url_for('aprobar_bauche') }}" method="POST" style="display:inline;">
           <input type="hidden" name="ruta" value="{{ ruta }}">
           <input type="hidden" name="nombre" value="{{ nombre }}">
           <button type="submit" class="aprobar">✅ Aprobar</button>
         </form>
-        <form action="{{ url_for('rechazar_bauche') }}" method="POST" style="display:inline;">
-          <input type="hidden" name="ruta" value="{{ ruta }}">
-          <button type="submit" class="rechazar">❌ Rechazar</button>
-        </form>
+
+        <!-- Rechazar deshabilitado temporalmente -->
+        <p style="color: red; margin-top: 5px;">❌ Botón de rechazo deshabilitado temporalmente.</p>
       </div>
-    </div>
+     </div>
     {% endfor %}
   {% else %}
     <p style="text-align:center; color: gray;">No hay comprobantes pendientes.</p>
