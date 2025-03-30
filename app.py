@@ -3,19 +3,11 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_socketio import SocketIO, emit
 from werkzeug.utils import secure_filename
 from datetime import datetime
-import stripe
 import os
-import inspect
-for name, obj in globals().items():
-    if inspect.isfunction(obj) and hasattr(obj, '__name__') and obj.__name__ == "rechazar_bauche":
-        print("⚠️ Duplicado encontrado:", obj)
 
 bauches_pendientes = []  # ✅ Aquí está bien
 
 ubicaciones_en_memoria = {}
-
-# Configura Stripe con tu clave secreta (reemplaza 'tu_stripe_secret_key' con tu clave real)
-stripe.api_key = 'sk_test_51R5DNmR9YTwpr9wxSEVWbiclojlmYkKnkPHarfQSQgWm3PKihaCmOjZlvqcDnJ8HWWWMEWPUzzpzpFJ9IkVmI9my00KzxeOvRb'
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///lavamovil.db'
