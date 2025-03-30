@@ -5,6 +5,10 @@ from werkzeug.utils import secure_filename
 from datetime import datetime
 import stripe
 import os
+import inspect
+for name, obj in globals().items():
+    if inspect.isfunction(obj) and hasattr(obj, '__name__') and obj.__name__ == "rechazar_bauche":
+        print("⚠️ Duplicado encontrado:", obj)
 
 bauches_pendientes = []  # ✅ Aquí está bien
 
