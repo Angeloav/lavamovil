@@ -127,15 +127,15 @@ def register():
             return "Faltan datos", 400
 
         nombre_completo = f"{nombre.strip()} {apellido.strip()}"
-
         existing_user = Usuario.query.filter_by(nombre=nombre_completo).first()
         if existing_user:
             return "El nombre de usuario ya existe. Por favor, elige otro.", 400
 
-        nuevo_usuario = Usuario(nombre=nombre, apellido=apellido, rol=rol)
+        nuevo_usuario = Usuario(nombre=nombre_completo, apellido=apellido, rol=rol)
+
         db.session.add(nuevo_usuario)
         db.session.commit()
-       
+
         socketio.emit('nuevo_registro', {'nombre': nuevo_usuario.nombre})
         return redirect(url_for('login'))
 
@@ -632,12 +632,13 @@ def aprobar_bauche():
 from respaldo_db import crear_respaldo
 
 if __name__ == "__main__":
-    crear_respaldo()
     import os
     print("Directorio actual:", os.getcwd())
+
+    crear_respaldo()  # 🛡️ Genera respaldo antes de iniciar
+
     with app.app_context():
         db.create_all()
-        print("Base de datos creada o ya existente.")
-    socketio.run(app, host="0.0.0.0")
-# Despliegue forzado para Render
+        print("✅ Base de datos creada o ya existente.")
 
+    socketio.run(app, host="0.0.0.0")
