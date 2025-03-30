@@ -618,6 +618,9 @@ def aprobar_bauche():
             os.remove(ruta)
     return redirect(url_for('ver_bauches'))
 
+from respaldo_db import crear_respaldo
+crear_respaldo()
+
 if __name__ == "__main__":
     import os
     print("Directorio actual:", os.getcwd())
