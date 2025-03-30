@@ -584,19 +584,6 @@ def subir_bauche():
 
         return redirect(url_for('subscribe', enviado='ok'))
 
-@app.route('/admin/bauche/rechazar', methods=['POST'])
-def rechazar_bauche():
-    ruta = request.form.get('ruta')
-    if ruta in bauches_pendientes:
-        bauches_pendientes.remove(ruta)
-        # También podrías borrar el archivo si lo deseas
-    return redirect(url_for('ver_bauches'))
-
-from werkzeug.utils import secure_filename
-from datetime import datetime
-
-bauches_pendientes = []
-
 @app.route('/ver_bauches')
 def ver_bauches():
     if 'user_id' not in session:
