@@ -616,13 +616,6 @@ def aprobar_bauche():
             os.remove(ruta)
     return redirect(url_for('ver_bauches'))
 
-@app.route('/rechazar_bauche', methods=['POST'])
-def rechazar_bauche():
-    ruta = request.form.get('ruta')
-    if ruta and os.path.exists(ruta):
-        os.remove(ruta)
-    return redirect(url_for('ver_bauches'))
-
 if __name__ == "__main__":
     import os
     print("Directorio actual:", os.getcwd())
