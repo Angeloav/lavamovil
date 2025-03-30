@@ -584,14 +584,6 @@ def subir_bauche():
 
         return redirect(url_for('subscribe', enviado='ok'))
 
-@app.route('/admin/bauche/aprobar', methods=['POST'])
-def aprobar_bauche():
-    ruta = request.form.get('ruta')
-    if ruta in bauches_pendientes:
-        bauches_pendientes.remove(ruta)
-        # Aquí luego puedes activar al lavador manualmente si lo deseas
-    return redirect(url_for('ver_bauches'))
-
 @app.route('/admin/bauche/rechazar', methods=['POST'])
 def rechazar_bauche():
     ruta = request.form.get('ruta')
