@@ -50,5 +50,17 @@
       </p>
     </div>
   </div>
+ <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+  const socket = io();
+
+  socket.on('notificacion', function(data) {
+    const usuarioActual = "{{ user.nombre }}";
+    if (data.usuario === usuarioActual) {
+      alert(data.mensaje);
+      window.location.href = "/lavador_trabajo";
+    }
+  });
+</script>
 </body>
 </html>
