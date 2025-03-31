@@ -606,7 +606,9 @@ def subir_bauche():
 
     # 🔔 Notificación para administrador
     socketio.emit('notificacion_admin', {
-        'mensaje': f'📥 Nuevo comprobante subido por {nombre}'
+        'mensaje': f'📩 El lavador {nombre} ha enviado un comprobante.'
+    })
+
     }, broadcast=True)
 
     return redirect(url_for('dashboard'))
