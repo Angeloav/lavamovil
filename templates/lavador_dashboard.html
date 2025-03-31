@@ -55,7 +55,7 @@
   const socket = io();
 
   socket.on('notificacion', function(data) {
-    const usuarioActual = "{{ user.nombre }}";
+    const usuarioActual = "{{ user.nombre|trim|lower }}";
     if (data.usuario === usuarioActual) {
       alert(data.mensaje);
       window.location.href = "/lavador_trabajo";
