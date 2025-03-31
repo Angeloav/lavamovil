@@ -45,35 +45,41 @@
       <p><strong>Teléfono:</strong> {{ user.telefono or 'No disponible' }}</p>
       <p><strong>Dirección:</strong> {{ user.direccion or 'No disponible' }}</p>
       <p><strong>Descripción:</strong> {{ user.descripcion or 'No disponible' }}</p>
-      <p><strong>Estado de suscripción:</strong>
-        {% if user.suscrito %}
-          ✅ Activo
-          <br>
-          <a class="btn" href="{{ url_for('lavador_trabajo') }}">Ir al panel de trabajo</a>
-        {% else %}
-          ❌ Inactivo
-          <form action="{{ url_for('subir_bauche') }}" method="POST" enctype="multipart/form-data">
-            <label>Sube tu comprobante de pago:</label><br>
-            <input type="file" name="bauche" required><br>
-            <input type="hidden" name="nombre" value="{{ user.nombre }}">
-            <button class="btn" type="submit">📤 Enviar Comprobante</button>
-          </form>
-        {% endif %}
-      </p>
+      <p><strong>Estado de suscripción:</strong></p>
+
+      {% if user.suscrito %}
+        <p>✅ Activo</p>
+        <a class="btn" href="{{ url_for('lavador_trabajo') }}">Ir al panel de trabajo</a>
+      {% else %}
+        <p>❌ Inactivo</p>
+        <p style="color: red; margin-top: 10px;"><strong>Para activar tu cuenta, realiza un depósito a:</strong></p>
+        <ul style="margin-bottom: 15px;">
+          <li><strong>Banco:</strong> Banco Ademi</li>
+          <li><strong>Cuenta:</strong> 20050919566947</li>
+          <li><strong>Nombre:</strong> Angelo A Abreu</li>
+        </ul>
+
+        <form action="{{ url_for('subir_bauche') }}" method="POST" enctype="multipart/form-data">
+          <label>Sube tu comprobante de pago:</label><br>
+          <input type="file" name="bauche" required><br>
+          <input type="hidden" name="nombre" value="{{ user.nombre }}">
+          <button class="btn" type="submit">📤 Enviar Comprobante</button>
+        </form>
+      {% endif %}
     </div>
   </div>
 
-<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-<script>
-  const socket = io();
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script>
+    const socket = io();
 
-  socket.on('notificacion', function(data) {
-    const usuarioActual = "{{ user.nombre|trim|lower }}";
-    if (data.usuario === usuarioActual) {
-      alert(data.mensaje);
-      window.location.href = "/lavador_trabajo";
-    }
-  });
-</script>
+    socket.on('notificacion', function(data) {
+      const usuarioActual = "{{ user.nombre|trim|lower }}";
+      if (data.usuario === usuarioActual) {
+        alert(data.mensaje);
+        window.location.href = "/lavador_trabajo";
+      }
+    });
+  </script>
 </body>
 </html>
