@@ -648,7 +648,13 @@ if __name__ == "__main__":
     import os
     print("Directorio actual:", os.getcwd())
 
-    # Solo genera respaldo sin tocar la base de datos
-    crear_respaldo()  # 🛡️
+    # 🛡️ Respaldo de seguridad
+    crear_respaldo()
 
+    # ✅ Crear tablas si no existen
+    with app.app_context():
+        db.create_all()
+        print("✅ Tablas creadas si no existían")
+
+    # 🔥 Inicia servidor
     socketio.run(app, host="0.0.0.0")
