@@ -604,10 +604,10 @@ def subir_bauche():
 
     bauches_pendientes.append((ruta, nombre))
 
-    # 🔔 Notificación para administrador
+        # 🔔 Notificación para administrador
     socketio.emit('notificacion_admin', {
         'mensaje': f'📩 El lavador {nombre} ha enviado un comprobante.'
-    })
+    })  # ✅ Sin argumento broadcast
 
     return redirect(url_for('dashboard'))
 
