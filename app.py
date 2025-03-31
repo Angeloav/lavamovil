@@ -648,10 +648,7 @@ if __name__ == "__main__":
     import os
     print("Directorio actual:", os.getcwd())
 
-    crear_respaldo()  # 🛡️ Genera respaldo antes de iniciar
-
-    with app.app_context():
-        db.create_all()
-        print("✅ Base de datos creada o ya existente.")
+    # Solo genera respaldo sin tocar la base de datos
+    crear_respaldo()  # 🛡️
 
     socketio.run(app, host="0.0.0.0")
