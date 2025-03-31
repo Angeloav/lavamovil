@@ -599,6 +599,7 @@ def subir_bauche():
 
     nombre_archivo = secure_filename(archivo.filename)
     ruta = os.path.join('static', 'bauches', nombre_archivo)
+    os.makedirs(os.path.dirname(ruta), exist_ok=True)
     archivo.save(ruta)
 
     bauches_pendientes.append((ruta, nombre))
