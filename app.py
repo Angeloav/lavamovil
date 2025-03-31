@@ -609,8 +609,6 @@ def subir_bauche():
         'mensaje': f'📩 El lavador {nombre} ha enviado un comprobante.'
     })
 
-    }, broadcast=True)
-
     return redirect(url_for('dashboard'))
 
 @app.route('/aprobar_bauche', methods=['POST'])
