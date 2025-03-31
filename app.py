@@ -74,26 +74,25 @@ def handle_chat_message(data):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        nombre = request.form.get('nombre')
-        rol_input = request.form.get('rol')
-        user = Usuario.query.filter_by(nombre=nombre).first()
-        if user:
-            if user.rol.lower().strip() == rol_input.lower().strip():
-                session['user_id'] = user.id
-                session['user_name'] = user.nombre
-                if rol_input == 'cliente':
-                    return redirect(url_for('cliente_dashboard'))
-                elif rol_input == 'lavador':
-                    if not user.descripcion or not user.telefono or not user.direccion or not user.id_personal:
-                        return redirect(url_for('lavador_perfil'))
-                    elif not user.suscrito:
-                        return redirect(url_for('subscribe'))
-                    else:
-                        return redirect(url_for('lavador_dashboard'))
-                elif rol_input == 'admin':
-                    return redirect(url_for('admin_dashboard'))
+        nombre = request.form['nombre'].strip().lower()
+        rol = request.form['rol']
 
-        return "Usuario no encontrado", 404
+        # Buscar el usuario con nombre completo
+        usuario = Usuario.query.filter(
+            db.func.lower(Usuario.nombre) == nombre,
+            Usuario.rol == rol
+        ).first()
+
+        if usuario:
+            session['user_id'] = usuario.id
+            if usuario.rol == 'cliente':
+                return redirect(url_for('cliente_dashboard'))
+            elif usuario.rol == 'lavador':
+                return redirect(url_for('lavador_dashboard'))
+            elif usuario.rol == 'admin':
+                return redirect(url_for('admin_dashboard'))
+        else:
+            return "Usuario no encontrado o rol incorrecto", 403
 
     return render_template('login.html')
 
