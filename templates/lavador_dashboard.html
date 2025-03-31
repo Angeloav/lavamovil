@@ -29,6 +29,12 @@
     .btn:hover {
       background-color: #218838;
     }
+    form {
+      margin-top: 20px;
+    }
+    input[type="file"] {
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
@@ -46,11 +52,18 @@
           <a class="btn" href="{{ url_for('lavador_trabajo') }}">Ir al panel de trabajo</a>
         {% else %}
           ❌ Inactivo
+          <form action="{{ url_for('subir_bauche') }}" method="POST" enctype="multipart/form-data">
+            <label>Sube tu comprobante de pago:</label><br>
+            <input type="file" name="bauche" required><br>
+            <input type="hidden" name="nombre" value="{{ user.nombre }}">
+            <button class="btn" type="submit">📤 Enviar Comprobante</button>
+          </form>
         {% endif %}
       </p>
     </div>
   </div>
- <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 <script>
   const socket = io();
 
