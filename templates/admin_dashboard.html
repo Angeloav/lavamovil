@@ -163,6 +163,14 @@
       mostrarNotificacion("✅ Servicio #" + data.solicitud_id + " finalizado con calificación: " + data.calificacion);
     });
   </script>
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+  const socket = io();
+
+  socket.on('notificacion_admin', function(data) {
+    alert(data.mensaje);
+  });
+</script>
 
 </body>
 </html>

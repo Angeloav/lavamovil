@@ -568,27 +568,6 @@ def admin_estadisticas():
                            solicitudes_totales=solicitudes_totales,
                            solicitudes_activas=solicitudes_activas)
 
-@app.route('/subir_bauche', methods=['POST'])
-def subir_bauche():
-    if 'bauche' not in request.files:
-        return "No se subió ningún archivo", 400
-
-    archivo = request.files['bauche']
-    if archivo.filename == '':
-        return "Archivo inválido", 400
-
-    if archivo:
-        filename = secure_filename(archivo.filename)
-        fecha = datetime.now().strftime("%Y%m%d%H%M%S")
-        carpeta = os.path.join('static', 'bauches')
-        os.makedirs(carpeta, exist_ok=True)  # 🔥 Asegura que la carpeta exista
-        ruta_guardado = os.path.join(carpeta, f"{fecha}_{filename}")
-        archivo.save(ruta_guardado)
-
-        # Agregar notificación para el admin (nombre de archivo)
-        bauches_pendientes.append(ruta_guardado)
-
-        return redirect(url_for('subscribe', enviado='ok'))
 
 @app.route('/ver_bauches')
 def ver_bauches():
@@ -607,7 +586,29 @@ def ver_bauches():
             ruta = os.path.join(carpeta, nombre_archivo)
             nombre_usuario = nombre_archivo.split("_", 1)[-1].split(".")[0]
             bauches.append((ruta, nombre_usuario))
+
     return render_template('ver_bauches.html', bauches=bauches)
+
+@app.route('/subir_bauche', methods=['POST'])
+def subir_bauche():
+    nombre = request.form.get('nombre')
+    archivo = request.files.get('bauche')
+
+    if not archivo or not nombre:
+        return "Faltan datos", 400
+
+    nombre_archivo = secure_filename(archivo.filename)
+    ruta = os.path.join('static', 'bauches', nombre_archivo)
+    archivo.save(ruta)
+
+    bauches_pendientes.append((ruta, nombre))
+
+    # 🔔 Notificación para administrador
+    socketio.emit('notificacion_admin', {
+        'mensaje': f'📥 Nuevo comprobante subido por {nombre}'
+    }, broadcast=True)
+
+    return redirect(url_for('dashboard'))
 
 @app.route('/aprobar_bauche', methods=['POST'])
 def aprobar_bauche():
