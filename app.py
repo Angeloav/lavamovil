@@ -633,7 +633,9 @@ def aprobar_bauche():
         usuario = Usuario.query.filter_by(nombre=nombre).first()
         if usuario:
             usuario.suscrito = True
+            usuario.bauche_enviado = False  # ✅ Limpiamos el estado
             db.session.commit()
+
             # 🔔 Notificar al lavador si está conectado
             socketio.emit('notificacion', {
                 'usuario': usuario.nombre.strip().lower(),
@@ -642,9 +644,8 @@ def aprobar_bauche():
 
         if os.path.exists(ruta):
             os.remove(ruta)
-    return redirect(url_for('ver_bauches'))
 
-from respaldo_db import crear_respaldo
+    return redirect(url_for('ver_bauches'))
 
 if __name__ == "__main__":
     import os
