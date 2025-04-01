@@ -91,10 +91,12 @@ def login():
             elif usuario.rol == 'lavador':
                 # Verificar si ya completó sus datos
                 if not usuario.telefono or not usuario.direccion:
-                    return redirect(url_for('lavador_datos'))
-                else:
-                    return redirect(url_for('lavador_dashboard'))
-
+                    return redirect(url_for('lavador_perfil'))
+                elif not usuario.suscrito:
+                return redirect(url_for('subscribe'))
+            else:
+                return redirect(url_for('lavador_dashboard'))
+                
             elif usuario.rol == 'admin':
                 return redirect(url_for('admin_dashboard'))
 
@@ -635,36 +637,6 @@ def aprobar_bauche():
         if os.path.exists(ruta):
             os.remove(ruta)
     return redirect(url_for('ver_bauches'))
-
-@app.route('/admin/reset_db')
-def reset_db():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-
-    user = db.session.get(Usuario, session['user_id'])
-    if not user or user.rol != 'admin':
-        return "Acceso denegado", 403
-
-    with app.app_context():
-        db.drop_all()
-        db.create_all()
-    return "✅ Base de datos reiniciada correctamente (modo prueba)"
-
-@app.route('/lavador/datos', methods=['GET', 'POST'])
-def lavador_datos():  # ✅ Este nombre sí funciona con url_for('lavador_datos')
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-
-    user = db.session.get(Usuario, session['user_id'])
-
-    if request.method == 'POST':
-        user.telefono = request.form.get('telefono')
-        user.direccion = request.form.get('direccion')
-        user.descripcion = request.form.get('descripcion')
-        db.session.commit()
-        return redirect(url_for('lavador_dashboard'))
-
-    return render_template('lavador_datos.html', user=user)
 
 from respaldo_db import crear_respaldo
 
