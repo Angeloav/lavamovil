@@ -89,14 +89,14 @@ def login():
                 return redirect(url_for('cliente_dashboard'))
 
             elif usuario.rol == 'lavador':
-                # Verificar si ya completó sus datos
-                if not usuario.telefono or not usuario.direccion:
+                # Verifica si el perfil del lavador está completo
+                if not (usuario.telefono and usuario.direccion and usuario.descripcion and usuario.id_personal):
                     return redirect(url_for('lavador_perfil'))
                 elif not usuario.suscrito:
-                return redirect(url_for('subscribe'))
-            else:
-                return redirect(url_for('lavador_dashboard'))
-                
+                    return redirect(url_for('subscribe'))
+                else:
+                    return redirect(url_for('lavador_dashboard'))
+
             elif usuario.rol == 'admin':
                 return redirect(url_for('admin_dashboard'))
 
