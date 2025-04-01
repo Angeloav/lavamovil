@@ -28,6 +28,7 @@ class Usuario(db.Model):
     telefono = db.Column(db.String(20), default="")    # Número de teléfono
     direccion = db.Column(db.String(200), default="")  # Dirección de su casa
     id_personal = db.Column(db.String(50), default="") # Número de identificación personal
+    bauche_enviado = db.Column(db.Boolean, default=False)
 
 # Modelo de solicitud de lavado con campo para calificación
 class Solicitud(db.Model):
@@ -613,7 +614,9 @@ def subir_bauche():
     os.makedirs(os.path.dirname(ruta), exist_ok=True)
     archivo.save(ruta)
 
-    bauches_pendientes.append((ruta, user.nombre))
+    # ✅ Marcar que el lavador ya envió el comprobante
+    user.bauche_enviado = True
+    db.session.commit()
 
     # 🔔 Notificación para administrador
     socketio.emit('notificacion_admin', {
