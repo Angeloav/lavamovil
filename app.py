@@ -599,25 +599,28 @@ def ver_bauches():
 
 @app.route('/subir_bauche', methods=['POST'])
 def subir_bauche():
-    nombre = request.form.get('nombre')
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user = db.session.get(Usuario, session['user_id'])
     archivo = request.files.get('bauche')
 
-    if not archivo or not nombre:
-        return "Faltan datos", 400
+    if not archivo:
+        return "Falta el archivo", 400
 
     nombre_archivo = secure_filename(archivo.filename)
     ruta = os.path.join('static', 'bauches', nombre_archivo)
     os.makedirs(os.path.dirname(ruta), exist_ok=True)
     archivo.save(ruta)
 
-    bauches_pendientes.append((ruta, nombre))
+    bauches_pendientes.append((ruta, user.nombre))
 
-        # 🔔 Notificación para administrador
+    # 🔔 Notificación para administrador
     socketio.emit('notificacion_admin', {
-        'mensaje': f'📩 El lavador {nombre} ha enviado un comprobante.'
+        'mensaje': f'📩 El lavador {user.nombre} ha enviado un comprobante.'
     })
 
-    return redirect(url_for('dashboard'))
+    return redirect(url_for('lavador_dashboard'))
 
 @app.route('/aprobar_bauche', methods=['POST'])
 def aprobar_bauche():

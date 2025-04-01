@@ -41,6 +41,13 @@
   <div class="container">
     <h1>Bienvenido, {{ user.nombre }}</h1>
     <h3 style="color: green;">ID de usuario: {{ user.id }}</h3>
+
+    {% if user.suscrito == False %}
+  <div style="background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #ffeeba;">
+    🕒 Tu comprobante fue enviado. Espera la aprobación del administrador.
+  </div>
+{% endif %}
+
     <div class="info">
       <p><strong>Teléfono:</strong> {{ user.telefono or 'No disponible' }}</p>
       <p><strong>Dirección:</strong> {{ user.direccion or 'No disponible' }}</p>
