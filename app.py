@@ -77,7 +77,6 @@ def login():
         nombre = request.form['nombre'].strip().lower()
         rol = request.form['rol']
 
-        # Buscar el usuario con nombre completo
         usuario = Usuario.query.filter(
             db.func.lower(Usuario.nombre) == nombre,
             Usuario.rol == rol
@@ -85,14 +84,21 @@ def login():
 
         if usuario:
             session['user_id'] = usuario.id
+
             if usuario.rol == 'cliente':
                 return redirect(url_for('cliente_dashboard'))
+
             elif usuario.rol == 'lavador':
-                return redirect(url_for('lavador_dashboard'))
+                # Verificar si ya completó sus datos
+                if not usuario.telefono or not usuario.direccion:
+                    return redirect(url_for('lavador_datos'))
+                else:
+                    return redirect(url_for('lavador_dashboard'))
+
             elif usuario.rol == 'admin':
                 return redirect(url_for('admin_dashboard'))
-        else:
-            return "Usuario no encontrado o rol incorrecto", 403
+
+        return "Usuario no encontrado o rol incorrecto", 403
 
     return render_template('login.html')
 
