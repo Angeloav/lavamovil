@@ -449,7 +449,7 @@ def admin_dashboard():
         return redirect(url_for('login'))
 
     user = db.session.get(Usuario, session['user_id'])
-    if user.rol != 'admin':
+    if not user or user.rol != 'admin':
         return "Acceso denegado", 403
 
     return render_template('admin_dashboard.html', user=user)
