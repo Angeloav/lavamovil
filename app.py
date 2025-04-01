@@ -613,7 +613,7 @@ def subir_bauche():
         # 🔔 Notificación para administrador
     socketio.emit('notificacion_admin', {
         'mensaje': f'📩 El lavador {nombre} ha enviado un comprobante.'
-    })  # ✅ Sin argumento broadcast
+    })
 
     return redirect(url_for('dashboard'))
 
@@ -649,6 +649,22 @@ def reset_db():
         db.drop_all()
         db.create_all()
     return "✅ Base de datos reiniciada correctamente (modo prueba)"
+
+@app.route('/lavador/datos', methods=['GET', 'POST'])
+def lavador_datos():  # ✅ Este nombre sí funciona con url_for('lavador_datos')
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user = db.session.get(Usuario, session['user_id'])
+
+    if request.method == 'POST':
+        user.telefono = request.form.get('telefono')
+        user.direccion = request.form.get('direccion')
+        user.descripcion = request.form.get('descripcion')
+        db.session.commit()
+        return redirect(url_for('lavador_dashboard'))
+
+    return render_template('lavador_datos.html', user=user)
 
 from respaldo_db import crear_respaldo
 
