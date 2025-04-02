@@ -42,6 +42,12 @@
     <h1>Bienvenido, {{ user.nombre }}</h1>
     <h3 style="color: green;">ID de usuario: {{ user.id }}</h3>
 
+   {% if user.suscrito %}
+  <script>
+    window.location.href = "/lavador_trabajo";
+  </script>
+{% endif %}
+
     {% if user.suscrito == False %}
   <div style="background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #ffeeba;">
     🕒 Tu comprobante fue enviado. Espera la aprobación del administrador.
