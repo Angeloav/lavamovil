@@ -643,6 +643,6 @@ if __name__ == "__main__":
             db.create_all()
             print("✅ Base de datos creada por primera vez.")
         else:
-            print("🛡️ Base de datos ya existente. No se creó de nuevo.")
+            print("✅ Base de datos creada por primera vez. (actualizado)")
 
     socketio.run(app, host="0.0.0.0")
