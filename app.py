@@ -594,11 +594,11 @@ def subir_bauche():
     user.bauche_enviado = True
     db.session.commit()
 
-    
+    # ✅ Notificación compatible con Flask-SocketIO moderno
     socketio.emit('notificacion_admin', {
         'mensaje': f'📩 El lavador {user.nombre} ha enviado un comprobante.'
-    }, broadcast=True)
-   
+    }, namespace='/', to=None)
+
     return redirect(url_for('lavador_dashboard'))
 
 @app.route('/aprobar_bauche', methods=['POST'])
