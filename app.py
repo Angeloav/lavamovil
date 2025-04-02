@@ -594,10 +594,11 @@ def subir_bauche():
     user.bauche_enviado = True
     db.session.commit()
 
+    
     socketio.emit('notificacion_admin', {
         'mensaje': f'📩 El lavador {user.nombre} ha enviado un comprobante.'
-    })
-
+    }, broadcast=True)
+   
     return redirect(url_for('lavador_dashboard'))
 
 @app.route('/aprobar_bauche', methods=['POST'])
