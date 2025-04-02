@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel del Cliente - LavaMóvil</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <style>
+    #map {
+      height: 400px;
+      width: 100%;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+    .info-box {
+      background-color: #f9f9f9;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+    .btn {
+      padding: 10px 20px;
+      margin-right: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+    }
+    .btn-danger {
+      background-color: crimson;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Bienvenido, {{ user.nombre }}</h1>
+    <h3 style="color: green;">ID de usuario: {{ user.id }}</h3>
+
+    <div id="map"></div>
+
+    {% if solicitud %}
+      <div class="info-box">
+        <h3>🚘 Lavador asignado:</h3>
+        <p><strong>Nombre:</strong> {{ solicitud.lavador.nombre }}</p>
+        <p><strong>Teléfono:</strong> {{ solicitud.lavador.telefono or 'No disponible' }}</p>
+        <button class="btn" onclick="finalizarServicio({{ solicitud.id }})">✅ Finalizar servicio</button>
+        <button class="btn btn-danger" onclick="cancelarServicio({{ solicitud.id }})">❌ Cancelar</button>
+      </div>
+    {% else %}
+      <button class="btn" onclick="solicitarServicio()">🧽 Solicitar servicio de lavado</button>
+    {% endif %}
+
+    <a href="{{ url_for('logout') }}" class="btn btn-danger" style="margin-top: 20px;">🚪 Cerrar sesión</a>
+  </div>
+
+  <script>
+    let map, marker;
+
+    function initMap() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+          const coords = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+          map = new google.maps.Map(document.getElementById("map"), {
+            center: coords,
+            zoom: 15
+          });
+          marker = new google.maps.Marker({
+            position: coords,
+            map: map,
+            title: "Tu ubicación"
+          });
+        }, () => {
+          alert("No se pudo obtener tu ubicación.");
+        });
+      } else {
+        alert("Tu navegador no soporta geolocalización.");
+      }
+    }
+
+    function solicitarServicio() {
+      if (!marker) return alert("Esperando ubicación...");
+      const coords = marker.getPosition();
+      fetch("/solicitar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          latitud: coords.lat(),
+          longitud: coords.lng()
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert("🧼 Solicitud enviada con éxito.");
+        location.reload();
+      });
+    }
+
+    function cancelarServicio(id) {
+      fetch("/cancelar_solicitud", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ solicitud_id: id })
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert("❌ Solicitud cancelada.");
+        location.reload();
+      });
+    }
+
+    function finalizarServicio(id) {
+      const calificacion = prompt("¿Cómo calificarías el servicio? (1 a 5 estrellas)");
+      if (!calificacion || calificacion < 1 || calificacion > 5) {
+        return alert("Por favor, ingresa una calificación válida entre 1 y 5.");
+      }
+
+      fetch("/finalizar_servicio", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ solicitud_id: id, calificacion: parseInt(calificacion) })
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert("✅ Servicio finalizado. ¡Gracias por tu calificación!");
+        location.reload();
+      });
+    }
+
+    window.initMap = initMap;
+  </script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBmVCNKb_sjx-vE5b1YoJpPUgm8Ub09ElE"&callback=initMap" async defer></script>
+</body>
+</html>
