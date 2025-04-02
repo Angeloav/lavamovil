@@ -580,7 +580,13 @@ def ver_bauches():
 @app.route('/subir_bauche', methods=['POST'])
 @login_requerido
 def subir_bauche():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
     user = db.session.get(Usuario, session['user_id'])
+    if not user:
+        return "Usuario no válido", 403
+
     archivo = request.files.get('bauche')
 
     if not archivo:
@@ -594,7 +600,6 @@ def subir_bauche():
     user.bauche_enviado = True
     db.session.commit()
 
-    # ✅ Notificación compatible con Flask-SocketIO moderno
     socketio.emit('notificacion_admin', {
         'mensaje': f'📩 El lavador {user.nombre} ha enviado un comprobante.'
     }, namespace='/', to=None)
