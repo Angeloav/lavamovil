@@ -1,4 +1,6 @@
 from flask import Flask, request, jsonify, render_template, redirect, url_for, session
+from functools import wraps
+
 from flask_sqlalchemy import SQLAlchemy
 from flask_socketio import SocketIO, emit
 from werkzeug.utils import secure_filename
@@ -13,7 +15,7 @@ ubicaciones_en_memoria = {}
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///lavamovil.db'
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {"connect_args": {"check_same_thread": False}}
-app.config['SECRET_KEY'] = 'tu_clave_secreta'  # Clave necesaria para las sesiones
+app.config['SECRET_KEY'] = 'hp_jz5pt4CHrgnlFc9HpASjJ6YyKnQP8647npT1'  # Clave necesaria para las sesiones
 app.config['MAX_CONTENT_LENGTH'] = 3 * 1024 * 1024  # 3 MB máximo
 db = SQLAlchemy(app)
 socketio = SocketIO(app)
@@ -42,7 +44,16 @@ class Solicitud(db.Model):
     lavador = db.relationship('Usuario', foreign_keys=[lavador_id])
     calificacion = db.Column(db.Integer)                    # Almacena la calificación
 
+def login_requerido(f):
+    @wraps(f)
+    def decorada(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorada
+
 @app.route('/solicitar', methods=['POST'])
+@login_requerido
 def solicitar_servicio():
     print("📨 El ID real del cliente que está creando la solicitud es:", session.get('user_id'))
     data = request.get_json()
@@ -61,12 +72,9 @@ def solicitar_servicio():
     return jsonify({'mensaje': 'Solicitud creada', 'solicitud_id': solicitud.id}), 201
 
 @app.route('/chat')
+@login_requerido
 def chat():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
     user = db.session.get(Usuario, session['user_id'])
-    if not user:
-        return redirect(url_for('login'))
     return render_template('chat.html', user=user)
 
 @socketio.on('chat_message')
@@ -427,27 +435,19 @@ def eliminar_solicitud():
     return redirect(url_for('admin_solicitudes'))
 
 @app.route('/lavador_dashboard')
+@login_requerido
 def lavador_dashboard():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
     user = db.session.get(Usuario, session['user_id'])
-    if not user or user.rol.lower() != 'lavador':
-        return "Acceso denegado", 403
     return render_template('lavador_dashboard.html', user=user)
 
 @app.route('/lavador_trabajo')
+@login_requerido
 def lavador_trabajo():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-
     user = db.session.get(Usuario, session['user_id'])
-
-    if user.rol != 'lavador':
-        return "Acceso denegado", 403
-
     return render_template('lavador_trabajo.html', user=user)
 
 @app.route('/admin')
+@login_requerido
 def admin_dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
@@ -459,16 +459,10 @@ def admin_dashboard():
     return render_template('admin_dashboard.html', user=user)
 
 @app.route('/cliente_dashboard')
+@login_requerido
 def cliente_dashboard():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-
     user = db.session.get(Usuario, session['user_id'])
-
-    if user.rol != 'cliente':
-        return "Acceso denegado", 403
-
-    return render_template('client_dashboard.html', user=user)
+    return render_template('cliente_dashboard.html', user=user)
 
 @app.route('/ver_solicitudes')
 # 🔹 Esta función parece no estar conectada a ninguna plantilla
@@ -578,32 +572,14 @@ def admin_estadisticas():
                            solicitudes_totales=solicitudes_totales,
                            solicitudes_activas=solicitudes_activas)
 
-
 @app.route('/ver_bauches')
+@login_requerido
 def ver_bauches():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-
-    user = db.session.get(Usuario, session['user_id'])
-    if user.rol != 'admin':
-        return "Acceso denegado", 403
-
-    # Mostrar los bauches pendientes con su nombre (tomado del nombre del archivo)
-    bauches = []
-    carpeta = os.path.join('static', 'bauches')
-    if os.path.exists(carpeta):
-        for nombre_archivo in os.listdir(carpeta):
-            ruta = os.path.join(carpeta, nombre_archivo)
-            nombre_usuario = nombre_archivo.split("_", 1)[-1].split(".")[0]
-            bauches.append((ruta, nombre_usuario))
-
-    return render_template('ver_bauches.html', bauches=bauches)
+    return render_template('ver_bauches.html')
 
 @app.route('/subir_bauche', methods=['POST'])
+@login_requerido
 def subir_bauche():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-
     user = db.session.get(Usuario, session['user_id'])
     archivo = request.files.get('bauche')
 
@@ -615,11 +591,9 @@ def subir_bauche():
     os.makedirs(os.path.dirname(ruta), exist_ok=True)
     archivo.save(ruta)
 
-    # ✅ Marcar que el lavador ya envió el comprobante
     user.bauche_enviado = True
     db.session.commit()
 
-    # 🔔 Notificación para administrador
     socketio.emit('notificacion_admin', {
         'mensaje': f'📩 El lavador {user.nombre} ha enviado un comprobante.'
     })
@@ -649,10 +623,8 @@ def aprobar_bauche():
     return redirect(url_for('ver_bauches'))
 
 @app.route('/verificar_suscripcion')
+@login_requerido
 def verificar_suscripcion():
-    if 'user_id' not in session:
-        return jsonify({'suscrito': False})
-
     user = db.session.get(Usuario, session['user_id'])
     return jsonify({'suscrito': user.suscrito})
 
