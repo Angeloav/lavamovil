@@ -648,6 +648,14 @@ def aprobar_bauche():
 
     return redirect(url_for('ver_bauches'))
 
+@app.route('/verificar_suscripcion')
+def verificar_suscripcion():
+    if 'user_id' not in session:
+        return jsonify({'suscrito': False})
+
+    user = db.session.get(Usuario, session['user_id'])
+    return jsonify({'suscrito': user.suscrito})
+
 if __name__ == "__main__":
     import os
     print("Directorio actual:", os.getcwd())

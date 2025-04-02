@@ -93,6 +93,17 @@
         window.location.href = "/lavador_trabajo";
       }
     });
-  </script>
+   <script>
+  // Verifica cada 5 segundos si el lavador fue aprobado
+  setInterval(() => {
+    fetch("/verificar_suscripcion")
+      .then(res => res.json())
+      .then(data => {
+        if (data.suscrito) {
+          window.location.href = "/lavador_trabajo";
+        }
+      });
+  }, 5000);
+</script>
 </body>
 </html>
