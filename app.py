@@ -11,7 +11,7 @@ from respaldo_db import crear_respaldo
 ubicaciones_en_memoria = {}
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///lavamovil.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(os.getcwd(), 'lavamovil.db')
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {"connect_args": {"check_same_thread": False}}
 app.config['SECRET_KEY'] = 'hp_jz5pt4CHrgnlFc9HpASjJ6YyKnQP8647npT1'  # Clave necesaria para las sesiones
 app.config['MAX_CONTENT_LENGTH'] = 3 * 1024 * 1024  # 3 MB máximo
