@@ -69,5 +69,14 @@
   {% else %}
     <p style="text-align:center; color: gray;">No hay comprobantes pendientes.</p>
   {% endif %}
+   <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+<script>
+  const socket = io();
+
+  socket.on('notificacion_admin', function(data) {
+    alert(data.mensaje);
+    location.reload();  // 🔁 Recarga la página para mostrar el nuevo comprobante
+  });
+</script>
 </body>
 </html>
