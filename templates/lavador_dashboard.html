@@ -2,62 +2,31 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Lavador - LavaMóvil</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body { font-family: Arial, sans-serif; background: #f9f9f9; padding: 20px; }
-    h1 { color: #007BFF; }
-    .container {
-      max-width: 600px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    .info { margin-top: 10px; }
-    .btn {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 12px 24px;
-      background-color: #28A745;
-      color: white;
-      border-radius: 6px;
-      text-decoration: none;
-      font-size: 16px;
-    }
-    .btn:hover {
-      background-color: #218838;
-    }
-    form {
-      margin-top: 20px;
-    }
-    input[type="file"] {
-      margin-top: 10px;
-    }
-  </style>
+  <title>Panel del Lavador</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
   <div class="container">
     <h1>Bienvenido, {{ user.nombre }}</h1>
     <h3 style="color: green;">ID de usuario: {{ user.id }}</h3>
 
-   {% if user.suscrito %}
-  <script>
-    window.location.href = "/lavador_trabajo";
-  </script>
-{% endif %}
+    {% if user.suscrito %}
+      <script>
+        window.location.href = "/lavador_trabajo";
+      </script>
+    {% endif %}
 
-    {% if user.suscrito == False %}
-  <div style="background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #ffeeba;">
-    🕒 Tu comprobante fue enviado. Espera la aprobación del administrador.
-  </div>
-{% endif %}
+    {% if not user.suscrito %}
+      <div style="background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #ffeeba;">
+        🕒 Tu comprobante fue enviado. Espera la aprobación del administrador.
+      </div>
+    {% endif %}
 
     <div class="info">
       <p><strong>Teléfono:</strong> {{ user.telefono or 'No disponible' }}</p>
       <p><strong>Dirección:</strong> {{ user.direccion or 'No disponible' }}</p>
       <p><strong>Descripción:</strong> {{ user.descripcion or 'No disponible' }}</p>
+      <p><strong>Cédula o ID personal:</strong> {{ user.id_personal or 'No disponible' }}</p>
       <p><strong>Estado de suscripción:</strong></p>
 
       {% if user.suscrito %}
@@ -93,17 +62,17 @@
         window.location.href = "/lavador_trabajo";
       }
     });
-   <script>
-  // Verifica cada 5 segundos si el lavador fue aprobado
-  setInterval(() => {
-    fetch("/verificar_suscripcion")
-      .then(res => res.json())
-      .then(data => {
-        if (data.suscrito) {
-          window.location.href = "/lavador_trabajo";
-        }
-      });
-  }, 5000);
-</script>
+
+    // Verifica cada 5 segundos si el lavador fue aprobado
+    setInterval(() => {
+      fetch("/verificar_suscripcion")
+        .then(res => res.json())
+        .then(data => {
+          if (data.suscrito) {
+            window.location.href = "/lavador_trabajo";
+          }
+        });
+    }, 5000);
+  </script>
 </body>
 </html>

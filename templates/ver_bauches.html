@@ -47,6 +47,7 @@
   </style>
 </head>
 <body>
+
   <h2>📥 Comprobantes Pendientes</h2>
 
   {% if bauches %}
@@ -60,23 +61,23 @@
           <input type="hidden" name="nombre" value="{{ nombre }}">
           <button type="submit" class="aprobar">✅ Aprobar</button>
         </form>
-
-        <!-- Rechazar deshabilitado temporalmente -->
         <p style="color: red; margin-top: 5px;">❌ Botón de rechazo deshabilitado temporalmente.</p>
       </div>
-     </div>
+    </div>
     {% endfor %}
   {% else %}
     <p style="text-align:center; color: gray;">No hay comprobantes pendientes.</p>
   {% endif %}
-   <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
-<script>
-  const socket = io();
 
-  socket.on('notificacion_admin', function(data) {
-    alert(data.mensaje);
-    location.reload();  // 🔁 Recarga la página para mostrar el nuevo comprobante
-  });
-</script>
+  <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+  <script>
+    const socket = io();
+
+    socket.on('notificacion_admin', function(data) {
+      alert(data.mensaje);
+      location.reload(); // 🔁 Recarga para mostrar el nuevo comprobante
+    });
+  </script>
+
 </body>
 </html>

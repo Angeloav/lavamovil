@@ -8,8 +8,6 @@ from datetime import datetime
 import os
 from respaldo_db import crear_respaldo
 
-bauches_pendientes = []  # ✅ Aquí está bien
-
 ubicaciones_en_memoria = {}
 
 app = Flask(__name__)
@@ -621,7 +619,7 @@ def aprobar_bauche():
             socketio.emit('notificacion', {
                 'usuario': usuario.nombre.strip().lower(),
                 'mensaje': '✅ Tu comprobante fue aprobado. Ya puedes trabajar.'
-            }, broadcast=True)
+            }, namespace='/', to=None)
 
         if os.path.exists(ruta):
             os.remove(ruta)
@@ -641,7 +639,10 @@ if __name__ == "__main__":
     crear_respaldo()  # 🛡️ Genera respaldo antes de iniciar
 
     with app.app_context():
-        db.create_all()
-        print("✅ Base de datos creada o ya existente.")
+        if not os.path.exists("lavamovil.db"):
+            db.create_all()
+            print("✅ Base de datos creada por primera vez.")
+        else:
+            print("🛡️ Base de datos ya existente. No se creó de nuevo.")
 
     socketio.run(app, host="0.0.0.0")
