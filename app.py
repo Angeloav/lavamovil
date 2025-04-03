@@ -583,13 +583,6 @@ def admin_estadisticas():
                            solicitudes_totales=solicitudes_totales,
                            solicitudes_activas=solicitudes_activas)
 
-@app.route('/ver_bauches')
-@login_requerido
-def ver_bauches():
-    bauches = Bauche.query.order_by(Bauche.fecha_envio.desc()).all()
-return render_template('ver_bauches.html', bauches=[(b.ruta, b.nombre_usuario) for b in bauches])
-
-
 @app.route('/subir_bauche', methods=['POST'])
 @login_requerido
 def subir_bauche():
@@ -650,6 +643,24 @@ def aprobar_bauche():
 def verificar_suscripcion():
     user = db.session.get(Usuario, session['user_id'])
     return jsonify({'suscrito': user.suscrito})
+
+# 🔄 Reemplaza tu ruta actual de ver_bauches por esta completa:
+@app.route('/ver_bauches')
+@login_requerido
+def ver_bauches():
+    user = db.session.get(Usuario, session['user_id'])
+    if not user or user.rol != 'admin':
+        return "Acceso denegado", 403
+
+    bauches = []
+    carpeta = os.path.join('static', 'bauches')
+    if os.path.exists(carpeta):
+        for nombre_archivo in os.listdir(carpeta):
+            ruta = os.path.join(carpeta, nombre_archivo)
+            nombre_usuario = nombre_archivo.split("_", 1)[-1].split(".")[0]
+            bauches.append((ruta, nombre_usuario))
+
+    return render_template('ver_bauches.html', bauches=bauches)
 
 if __name__ == "__main__":
     import os
