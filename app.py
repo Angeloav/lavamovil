@@ -20,6 +20,12 @@ app.config['MAX_CONTENT_LENGTH'] = 3 * 1024 * 1024  # 3 MB máximo
 db = SQLAlchemy(app)
 socketio = SocketIO(app)
 
+class Bauche(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    ruta = db.Column(db.String(255), nullable=False)
+    nombre_usuario = db.Column(db.String(100), nullable=False)
+    fecha_envio = db.Column(db.DateTime, default=datetime.utcnow)
+
 # Modelo de usuario con rol (cliente o lavador) y suscripción para lavadores
 class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -580,7 +586,9 @@ def admin_estadisticas():
 @app.route('/ver_bauches')
 @login_requerido
 def ver_bauches():
-    return render_template('ver_bauches.html', bauches=bauches_pendientes)
+    bauches = Bauche.query.order_by(Bauche.fecha_envio.desc()).all()
+return render_template('ver_bauches.html', bauches=[(b.ruta, b.nombre_usuario) for b in bauches])
+
 
 @app.route('/subir_bauche', methods=['POST'])
 @login_requerido
@@ -602,7 +610,9 @@ def subir_bauche():
     os.makedirs(os.path.dirname(ruta), exist_ok=True)
     archivo.save(ruta)
 
-    bauches_pendientes.append((ruta, user.nombre))
+    nuevo_bauche = Bauche(ruta=ruta, nombre_usuario=user.nombre)
+    db.session.add(nuevo_bauche)
+    db.session.commit()
 
     user.bauche_enviado = True
     db.session.commit()
