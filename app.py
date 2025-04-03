@@ -5,10 +5,13 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_socketio import SocketIO, emit
 from werkzeug.utils import secure_filename
 from datetime import datetime
-import os
+import 
+
 from respaldo_db import crear_respaldo
 
 ubicaciones_en_memoria = {}
+
+bauches_pendientes = []  # ✅ Lista en memoria para los bauches
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(os.getcwd(), 'lavamovil.db')
@@ -578,7 +581,7 @@ def admin_estadisticas():
 @app.route('/ver_bauches')
 @login_requerido
 def ver_bauches():
-    return render_template('ver_bauches.html')
+    return render_template('ver_bauches.html', bauches=bauches_pendientes)
 
 @app.route('/subir_bauche', methods=['POST'])
 @login_requerido
