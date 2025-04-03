@@ -460,7 +460,12 @@ def admin_dashboard():
 @login_requerido
 def cliente_dashboard():
     user = db.session.get(Usuario, session['user_id'])
-    return render_template('cliente_dashboard.html', user=user)
+
+    solicitud = Solicitud.query.filter_by(cliente_id=user.id).filter(
+        Solicitud.estado.in_(['pendiente', 'en_curso'])
+    ).first()
+
+    return render_template('cliente_dashboard.html', user=user, solicitud=solicitud)
 
 @app.route('/ver_solicitudes')
 # 🔹 Esta función parece no estar conectada a ninguna plantilla
@@ -594,6 +599,8 @@ def subir_bauche():
     ruta = os.path.join('static', 'bauches', nombre_archivo)
     os.makedirs(os.path.dirname(ruta), exist_ok=True)
     archivo.save(ruta)
+
+    bauches_pendientes.append((ruta, user.nombre))
 
     user.bauche_enviado = True
     db.session.commit()
