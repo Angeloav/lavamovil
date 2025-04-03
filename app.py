@@ -617,22 +617,26 @@ def subir_bauche():
     return redirect(url_for('lavador_dashboard'))
 
 @app.route('/aprobar_bauche', methods=['POST'])
+@login_requerido
 def aprobar_bauche():
     ruta = request.form.get('ruta')
     nombre = request.form.get('nombre')
+
     if ruta and nombre:
         usuario = Usuario.query.filter_by(nombre=nombre).first()
+
         if usuario:
             usuario.suscrito = True
-            usuario.bauche_enviado = False  # ✅ Limpiamos el estado
+            usuario.bauche_enviado = False
             db.session.commit()
 
-            # 🔔 Notificar al lavador si está conectado
+            # Notificar al lavador
             socketio.emit('notificacion', {
                 'usuario': usuario.nombre.strip().lower(),
                 'mensaje': '✅ Tu comprobante fue aprobado. Ya puedes trabajar.'
             }, namespace='/', to=None)
 
+        # Eliminar comprobante del servidor
         if os.path.exists(ruta):
             os.remove(ruta)
 
