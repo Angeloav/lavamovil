@@ -22,8 +22,11 @@
 </head>
 <body>
   <header>
+
     <h1>Cliente - LavaMóvil</h1>
     <p>ID: {{ user.id }} - {{ user.nombre }}</p>
+    <a href="{{ url_for('chat') }}" style="color: white; margin-right: 10px;">💬 Chat</a>
+    <a href="{{ url_for('logout') }}" style="color: white;">🚪 Cerrar sesión</a>
   </header>
   <div class="container">
     <div id="map"></div>
