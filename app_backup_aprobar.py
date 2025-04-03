@@ -13,10 +13,10 @@ ubicaciones_en_memoria = {}
 bauches_pendientes = []  # ✅ Lista en memoria para los bauches
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/lavamovil.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(os.getcwd(), 'lavamovil.db')
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {"connect_args": {"check_same_thread": False}}
 app.config['SECRET_KEY'] = 'hp_jz5pt4CHrgnlFc9HpASjJ6YyKnQP8647npT1'  # Clave necesaria para las sesiones
-app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10 MB máximo
+app.config['MAX_CONTENT_LENGTH'] = 3 * 1024 * 1024  # 3 MB máximo
 db = SQLAlchemy(app)
 socketio = SocketIO(app)
 
@@ -617,26 +617,22 @@ def subir_bauche():
     return redirect(url_for('lavador_dashboard'))
 
 @app.route('/aprobar_bauche', methods=['POST'])
-@login_requerido
 def aprobar_bauche():
     ruta = request.form.get('ruta')
     nombre = request.form.get('nombre')
-
     if ruta and nombre:
         usuario = Usuario.query.filter_by(nombre=nombre).first()
-
         if usuario:
             usuario.suscrito = True
-            usuario.bauche_enviado = False
+            usuario.bauche_enviado = False  # ✅ Limpiamos el estado
             db.session.commit()
 
-            # Notificar al lavador
+            # 🔔 Notificar al lavador si está conectado
             socketio.emit('notificacion', {
                 'usuario': usuario.nombre.strip().lower(),
                 'mensaje': '✅ Tu comprobante fue aprobado. Ya puedes trabajar.'
             }, namespace='/', to=None)
 
-        # Eliminar comprobante del servidor
         if os.path.exists(ruta):
             os.remove(ruta)
 
@@ -648,6 +644,7 @@ def verificar_suscripcion():
     user = db.session.get(Usuario, session['user_id'])
     return jsonify({'suscrito': user.suscrito})
 
+# 🔄 Reemplaza tu ruta actual de ver_bauches por esta completa:
 @app.route('/ver_bauches')
 @login_requerido
 def ver_bauches():
@@ -655,8 +652,15 @@ def ver_bauches():
     if not user or user.rol != 'admin':
         return "Acceso denegado", 403
 
-    bauches = Bauche.query.order_by(Bauche.fecha_envio.desc()).all()
-    return render_template('ver_bauches.html', bauches=[(b.ruta, b.nombre_usuario) for b in bauches])
+    bauches = []
+    carpeta = os.path.join('static', 'bauches')
+    if os.path.exists(carpeta):
+        for nombre_archivo in os.listdir(carpeta):
+            ruta = os.path.join(carpeta, nombre_archivo)
+            nombre_usuario = nombre_archivo.split("_", 1)[-1].split(".")[0]
+            bauches.append((ruta, nombre_usuario))
+
+    return render_template('ver_bauches.html', bauches=bauches)
 
 if __name__ == "__main__":
     import os
@@ -667,8 +671,6 @@ if __name__ == "__main__":
     with app.app_context():
         if not os.path.exists("lavamovil.db"):
             db.create_all()
-            print("✅ Base de datos creada por primera vez.")
-        else:
-            print("🛡️ Base de datos ya existente. No se creó de nuevo.")
+            print("✅ Todas las tablas necesarias han sido creadas (si no existían).")
 
     socketio.run(app, host="0.0.0.0")
