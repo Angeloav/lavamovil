@@ -671,8 +671,6 @@ if __name__ == "__main__":
     with app.app_context():
         if not os.path.exists("lavamovil.db"):
             db.create_all()
-            print("✅ Base de datos creada por primera vez.")
-        else:
-            print("✅ Base de datos creada por primera vez. (actualizado)")
+            print("✅ Todas las tablas necesarias han sido creadas (si no existían).")
 
     socketio.run(app, host="0.0.0.0")
