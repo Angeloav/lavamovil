@@ -12,8 +12,10 @@ ubicaciones_en_memoria = {}
 
 bauches_pendientes = []  # ✅ Lista en memoria para los bauches
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/lavamovil.db'
+basedir = os.path.abspath(os.path.dirname(__file__))
+app = Flask(__name__, instance_path=basedir)
+db_path = os.path.join(basedir, 'lavamovil.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {"connect_args": {"check_same_thread": False}}
 app.config['SECRET_KEY'] = 'hp_jz5pt4CHrgnlFc9HpASjJ6YyKnQP8647npT1'  # Clave necesaria para las sesiones
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10 MB máximo
