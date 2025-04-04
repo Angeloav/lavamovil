@@ -1,83 +1,82 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Comprobantes Pendientes</title>
+  <meta charset="UTF-8" />
+  <title>Ver Bauches - LavaMóvil</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
   <style>
-    body {
-      font-family: sans-serif;
-      background-color: #f4f4f4;
-      padding: 30px;
-    }
-    h2 {
-      text-align: center;
-      color: #333;
-    }
+    body { font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 0; padding: 0; }
+    header { background-color: #007BFF; color: white; padding: 10px; text-align: center; }
+    .container { padding: 20px; display: flex; flex-wrap: wrap; justify-content: center; }
     .bauche-box {
-      background: white;
-      padding: 20px;
-      margin: 20px auto;
+      border: 1px solid #ddd;
       border-radius: 10px;
-      width: 90%;
-      max-width: 500px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      background: white;
+      margin: 10px;
+      padding: 15px;
+      width: 300px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       text-align: center;
     }
-    img {
-      max-width: 100%;
-      border-radius: 8px;
-      margin-bottom: 15px;
+    .bauche-box img {
+      width: 100%;
+      border-radius: 5px;
     }
-    .acciones button {
-      margin: 0 10px;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
+    .acciones {
+      margin-top: 10px;
     }
     .aprobar {
       background-color: #28a745;
       color: white;
-    }
-    .rechazar {
-      background-color: crimson;
-      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
+  <header>
+    <h1>📄 Comprobantes Pendientes - LavaMóvil</h1>
+  </header>
 
-  <h2>📥 Comprobantes Pendientes</h2>
-
-  {% if bauches %}
-    {% for ruta, nombre in bauches %}
-    <div class="bauche-box">
-      <img src="{{ url_for('static', filename=ruta.split('static/')[1]) }}" alt="Comprobante">
-      <p><strong>Usuario:</strong> {{ nombre }}</p> 
-      <div class="acciones">
-        <form action="{{ url_for('aprobar_bauche') }}" method="POST" style="display:inline;">
-          <input type="hidden" name="ruta" value="{{ ruta }}">
-          <input type="hidden" name="nombre" value="{{ nombre }}">
-          <button type="submit" class="aprobar">✅ Aprobar</button>
-        </form>
-        <p style="color: red; margin-top: 5px;">❌ Botón de rechazo deshabilitado temporalmente.</p>
+  <div class="container">
+    {% if bauches %}
+      {% for ruta, nombre in bauches %}
+      <div class="bauche-box">
+        <img src="{{ url_for('static', filename=ruta.split('static/')[1]) }}" alt="Comprobante">
+        <p><strong>Usuario:</strong> {{ nombre }}</p>
+        <div class="acciones">
+          <form action="{{ url_for('aprobar_bauche') }}" method="POST" style="display:inline;">
+            <input type="hidden" name="ruta" value="{{ ruta }}">
+            <input type="hidden" name="nombre" value="{{ nombre }}">
+            <button type="submit" class="aprobar">✅ Aprobar</button>
+          </form>
+          <p style="color: red; margin-top: 5px;">❌ Botón de rechazo deshabilitado temporalmente.</p>
+        </div>
       </div>
-    </div>
-    {% endfor %}
-  {% else %}
-    <p style="text-align:center; color: gray;">No hay comprobantes pendientes.</p>
-  {% endif %}
+      {% endfor %}
+    {% else %}
+      <p style="text-align:center; color: gray;">No hay comprobantes pendientes.</p>
+    {% endif %}
+  </div>
 
-  <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
   <script>
-    const socket = io();
+    const socket = io({
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      transports: ['websocket']
+    });
 
-    socket.on('notificacion_admin', function(data) {
-      alert(data.mensaje);
-      location.reload(); // 🔁 Recarga para mostrar el nuevo comprobante
+    socket.on('connect', () => {
+      console.log('✅ Conectado al servidor de Socket.IO');
+    });
+
+    socket.on('disconnect', (reason) => {
+      console.warn('⚠️ Desconectado del servidor:', reason);
     });
   </script>
-
 </body>
 </html>
