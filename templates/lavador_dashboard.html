@@ -63,7 +63,6 @@
       }
     });
 
-    // Verifica cada 5 segundos si el lavador fue aprobado
     setInterval(() => {
       fetch("/verificar_suscripcion")
         .then(res => res.json())
