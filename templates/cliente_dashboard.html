@@ -21,7 +21,7 @@
   </style>
 </head>
 <body>
- <header>
+  <header>
     <h1>Cliente - LavaMóvil</h1>
     <p>Bienvenido, <strong>{{ user.nombre|capitalize }}</strong></p>
     <a href="{{ url_for('chat') }}"><button id="chat-btn">Chat</button></a>
@@ -34,6 +34,15 @@
     <button id="solicitar-btn">Solicitar Servicio</button>
     <button id="finalizar-btn">Finalizar Servicio / Calificar</button>
     <button id="cancelar-btn">Cancelar Solicitud</button>
+
+    <div id="lavador-info" style="display: none; background-color: #e0f7fa; padding: 15px; border-radius: 10px; margin-top: 20px;">
+      <h3>🚗 Lavador Asignado</h3>
+      <p><strong>Nombre:</strong> <span id="lavador-nombre"></span></p>
+      <p><strong>Teléfono:</strong> <span id="lavador-telefono"></span></p>
+      <p><strong>Dirección:</strong> <span id="lavador-direccion"></span></p>
+      <p><strong>Descripción:</strong> <span id="lavador-descripcion"></span></p>
+      <p><strong>ID Personal:</strong> <span id="lavador-id"></span></p>
+    </div>
   </div>
 
   <script>
@@ -100,6 +109,7 @@
     };
 
     const socket = io();
+
     socket.on("lavador_ubicacion", data => {
       const position = { lat: data.lat, lng: data.lng };
       if (!map) return;
@@ -115,15 +125,17 @@
       }
     });
 
+    // ✅ Aquí escuchamos cuando el lavador acepta y mostramos la información
+    socket.on("solicitud_aceptada", data => {
+      document.getElementById("lavador-info").style.display = "block";
+      document.getElementById("lavador-nombre").textContent = data.lavador.nombre;
+      document.getElementById("lavador-telefono").textContent = data.lavador.telefono;
+      document.getElementById("lavador-direccion").textContent = data.lavador.direccion;
+      document.getElementById("lavador-descripcion").textContent = data.lavador.descripcion;
+      document.getElementById("lavador-id").textContent = data.lavador.id_personal;
+    });
+
     window.onload = initMap;
   </script>
-  <div id="lavador-info" style="display: none; background-color: #e0f7fa; padding: 15px; border-radius: 10px; margin-top: 20px;">
-  <h3>🚗 Lavador Asignado</h3>
-  <p><strong>Nombre:</strong> <span id="lavador-nombre"></span></p>
-  <p><strong>Teléfono:</strong> <span id="lavador-telefono"></span></p>
-  <p><strong>Dirección:</strong> <span id="lavador-direccion"></span></p>
-  <p><strong>Descripción:</strong> <span id="lavador-descripcion"></span></p>
-  <p><strong>ID Personal:</strong> <span id="lavador-id"></span></p>
-</div>
 </body>
 </html>
