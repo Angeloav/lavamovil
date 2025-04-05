@@ -136,6 +136,14 @@
     });
 
     window.onload = initMap;
+
+  navigator.geolocation.watchPosition(function(position) {
+  socket.emit('cliente_ubicacion', {
+    lat: position.coords.latitude,
+    lng: position.coords.longitude
+  });
+});
+
   </script>
 </body>
 </html>

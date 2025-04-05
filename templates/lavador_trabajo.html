@@ -208,7 +208,29 @@
     mostrarNotificacion("🆕 Nueva solicitud (#" + data.solicitud_id + ")", data.solicitud_id);
   });
 
+  // ✅ Iniciamos el mapa
   window.onload = initMap;
+
+  let clienteMarker = null; 
+
+  // ✅ Escuchamos la ubicación en tiempo real del cliente
+  socket.on("cliente_ubicacion", function(data) {
+  const position = { lat: data.lat, lng: data.lng };
+
+  if (!map) return;
+
+  if (!clienteMarker) {
+    clienteMarker = new google.maps.Marker({
+      position: position,
+      map: map,
+      icon: "https://cdn-icons-png.flaticon.com/512/684/684908.png", // Ícono del cliente
+      title: "Ubicación del Cliente"
+    });
+  } else {
+    clienteMarker.setPosition(position);
+  }
+});
+
 </script>
 
 </body>

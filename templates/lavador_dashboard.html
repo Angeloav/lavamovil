@@ -55,6 +55,7 @@
   <script>
     const socket = io();
 
+    // ✅ Notificación en tiempo real cuando el administrador aprueba
     socket.on('notificacion', function(data) {
       const usuarioActual = "{{ user.nombre|trim|lower }}";
       if (data.usuario === usuarioActual) {
@@ -63,6 +64,7 @@
       }
     });
 
+    // ✅ Verificación periódica de suscripción cada 5 segundos
     setInterval(() => {
       fetch("/verificar_suscripcion")
         .then(res => res.json())
