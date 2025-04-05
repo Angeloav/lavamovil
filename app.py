@@ -137,7 +137,7 @@ def dashboard():
             return redirect(url_for('lavador_perfil'))
         return render_template('lavador_dashboard.html', user=user)
     elif rol == 'cliente':
-        return render_template('client_dashboard.html', user=user)
+        return render_template('cliente_dashboard.html', user=user)
     else:
         return "Rol desconocido", 400
 
@@ -285,6 +285,7 @@ def lavador_perfil():
 #         print("Perfil actualizado para el usuario", user.nombre)
         print("Perfil actualizado para el usuario", user.nombre)
         return redirect(url_for('dashboard'))
+
     return render_template('lavador_profile.html', user=user)
 
 @app.route('/estado_suscripcion')
