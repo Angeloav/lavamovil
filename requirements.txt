@@ -6,3 +6,4 @@ eventlet
 gunicorn
 stripe
 Flask-Session
+Flask-Login
