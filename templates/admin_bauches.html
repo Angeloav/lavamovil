@@ -1,70 +1,105 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Bauches Pendientes</title>
-  <style>
-    body { font-family: Arial; background: #f0f0f0; padding: 20px; }
-    .bauche-box {
-      background: white;
-      padding: 15px;
-      margin-bottom: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 8px;
-    }
-    form {
-      display: inline-block;
-      margin-top: 10px;
-    }
-    button {
-      padding: 8px 16px;
-      margin-right: 10px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    .aprobar {
-      background-color: #28a745;
-      color: white;
-    }
-    .rechazar {
-      background-color: crimson;
-      color: white;
-    }
-    a {
-      text-decoration: none;
-      color: #007bff;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Comprobantes de Pago - LavaMovil</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f4f8fb;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .bauche {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px auto;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            text-align: left;
+        }
+        .bauche img {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+        .boton-aprobar, .boton-rechazar {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 15px;
+        }
+        .boton-aprobar {
+            background-color: #28a745;
+            color: white;
+        }
+        .boton-rechazar {
+            background-color: #dc3545;
+            color: white;
+        }
+        .volver-btn {
+            padding: 12px 25px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 25px;
+            font-weight: bold;
+            margin-top: 30px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .volver-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-  <h1>📥 Comprobantes Subidos</h1>
 
-  {% if bauches %}
-    {% for bauche in bauches %}
-      <div class="bauche-box">
-        <img src="{{ url_for('static', filename=bauche.split('static/')[1]) }}" alt="Comprobante">
-        <p><strong>Ruta:</strong> {{ bauche }}</p>
-        <form action="{{ url_for('aprobar_bauche') }}" method="post">
-          <input type="hidden" name="ruta" value="{{ bauche }}">
-          <button class="aprobar" type="submit">✅ Aprobar</button>
-        </form>
-        <form action="{{ url_for('rechazar_bauche') }}" method="post">
-          <input type="hidden" name="ruta" value="{{ bauche }}">
-          <button class="rechazar" type="submit">❌ Rechazar</button>
-        </form>
-      </div>
+<h1>Comprobantes de Pago Pendientes</h1>
+
+{% if bauches %}
+    {% for lavador in bauches %}
+        <div class="bauche">
+            <p><strong>Nombre:</strong> {{ lavador.nombre }} {{ lavador.apellido }}</p>
+            <p><strong>Teléfono:</strong> {{ lavador.telefono }}</p>
+            <p><strong>Cédula / ID:</strong> {{ lavador.id_personal or 'No disponible' }}</p>
+            <p><strong>Descripción:</strong> {{ lavador.descripcion or 'No disponible' }}</p>
+
+            {% if lavador.bauche %}
+                <img src="{{ url_for('static', filename='bauches/' + lavador.bauche) }}" alt="Comprobante de Pago">
+            {% else %}
+                <p><strong>No se ha subido un comprobante válido.</strong></p>
+            {% endif %}
+            <br><br>
+
+            <form action="/aprobar_bauche" method="post">
+                <input type="hidden" name="lavador_id" value="{{ lavador.id }}">
+                <button type="submit" class="boton-aprobar">✅ Aprobar Comprobante</button>
+            </form>
+
+            <form action="{{ url_for('rechazar_bauche') }}" method="post">
+                <input type="hidden" name="lavador_id" value="{{ lavador.id }}">
+                <button type="submit" class="boton-rechazar">❌ Rechazar Comprobante</button>
+            </form>
+        </div>
     {% endfor %}
-  {% else %}
-    <p>No hay comprobantes pendientes por ahora.</p>
-  {% endif %}
+{% else %}
+    <p>No hay bauches pendientes.</p>
+{% endif %}
 
-  <p><a href="{{ url_for('admin_dashboard') }}">⬅️ Volver al panel admin</a></p>
+<button class="volver-btn" onclick="window.location.href='/admin_dashboard'">⬅️ Volver al Panel de Administración</button>
+
 </body>
 </html>

@@ -1,172 +1,86 @@
-<!DOCTYPE html>
+<!DOCTYPE html>  
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Panel Admin - LavaMóvil</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
-  <style>
-    body {
-      font-family: 'Rubik', sans-serif;
-      margin: 0;
-      background: linear-gradient(to right, #e0f7fa, #f1f8ff);
-    }
+    <meta charset="UTF-8">
+    <title>Panel de Administración - LavaMovil</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f4f8fb;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
 
-    header {
-      background: linear-gradient(to right, #2c3e50, #4ca1af);
-      color: white;
-      padding: 35px 20px;
-      text-align: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
+        h1 {
+            color: #2c3e50;
+            margin-top: 10px;
+        }
 
-    header h1 {
-      font-size: 30px;
-      margin-bottom: 10px;
-    }
+        .boton {
+            padding: 14px 25px;
+            margin: 12px 8px;
+            border-radius: 30px;
+            border: none;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 90%;
+            max-width: 320px;
+        }
 
-    header p {
-      font-size: 16px;
-      margin: 0;
-    }
+        .bauches { background-color: #17a2b8; }
+        .bauches:hover { background-color: #11707d; }
 
-    .container {
-      max-width: 1000px;
-      margin: 40px auto;
-      padding: 0 20px;
-    }
+        .lavadores { background-color: #28a745; }
+        .lavadores:hover { background-color: #1c7c31; }
 
-    .card {
-      background-color: white;
-      padding: 30px 25px;
-      margin-bottom: 25px;
-      border-radius: 16px;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
-      text-align: center;
-      transition: transform 0.2s ease;
-    }
+        .solicitudes { background-color: #ffc107; color: #333; }
+        .solicitudes:hover { background-color: #d4a307; color: #fff; }
 
-    .card:hover {
-      transform: translateY(-3px);
-    }
+        .cerrar {
+            background-color: #dc3545;
+            padding: 14px 25px;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
 
-    .card h2 {
-      font-size: 22px;
-      margin-bottom: 15px;
-      color: #333;
-    }
+        .cerrar:hover {
+            background-color: #a71d2a;
+        }
 
-    .card a {
-      display: inline-block;
-      padding: 12px 22px;
-      font-size: 15px;
-      text-decoration: none;
-      background-color: #007bff;
-      color: white;
-      border-radius: 8px;
-      transition: background-color 0.3s;
-    }
-
-    .card a:hover {
-      background-color: #0056b3;
-    }
-
-    .card:last-child a {
-      background-color: crimson;
-    }
-
-    .card:last-child a:hover {
-      background-color: #a40000;
-    }
-
-    #notificaciones {
-      background-color: #fff3cd;
-      color: #856404;
-      padding: 14px;
-      margin: 20px auto;
-      max-width: 800px;
-      border-radius: 10px;
-      text-align: center;
-      font-weight: bold;
-      display: none;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-  </style>
+        .boton-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+    </style>
 </head>
 <body>
 
-  <header>
-    <h1>📊 Panel de Administración</h1>
-    <p>Bienvenido, <strong>{{ user.nombre|capitalize }}</strong></p>
-  </header>
+    <h1>Panel de Administración</h1>
 
-  <div id="notificaciones"></div>
-
-  <div class="container">
-    <div class="card">
-      <h2>👷 Lavadores Registrados</h2>
-      <a href="{{ url_for('admin_lavadores') }}">Gestionar Lavadores</a>
-    </div>
-    <div class="card">
-      <h2>🙋 Clientes Registrados</h2>
-      <a href="{{ url_for('admin_clientes') }}">Gestionar Clientes</a>
+    <div class="boton-container">
+        <button class="boton bauches" onclick="window.location.href='/admin_bauches'">📄 Ver Comprobantes de Pago</button>
+        <button class="boton lavadores" onclick="window.location.href='/admin_lavadores'">🧽 Ver Lavadores Activos</button>
+        <button class="boton solicitudes" onclick="window.location.href='/admin_solicitudes'">📋 Ver Solicitudes Activas</button>
+        <button class="cerrar" onclick="window.location.href='/admin_logout'">🔒 Cerrar Sesión</button>
     </div>
 
-    <div class="card">
-      <h2>📄 Solicitudes de Servicios</h2>
-      <a href="{{ url_for('admin_solicitudes') }}">Ver Solicitudes</a>
-    </div>
-
-    <div class="card">
-      <h2>📊 Ver Estadísticas en Vivo</h2>
-      <a href="{{ url_for('admin_estadisticas') }}">Ir al Panel de Estadísticas</a>
-    </div>
-
-    <div class="card">
-      <h2>💬 Chat</h2>
-      <a href="{{ url_for('chat') }}">Ir al Chat</a>
-    </div>
-
-    <div class="card">
-      <h2>📥 Comprobantes Pendientes</h2>
-      <a href="{{ url_for('ver_bauches') }}">Ver Comprobantes</a>
-    </div>
-    
-    <div class="card">
-      <h2>🚪 Cerrar Sesión</h2>
-      <a href="{{ url_for('logout') }}">Cerrar Sesión</a>
-    </div>
-  </div>
-
-  <script>
-    const socket = io();
-    const notiBox = document.getElementById("notificaciones");
-
-    function mostrarNotificacion(mensaje) {
-      notiBox.innerText = mensaje;
-      notiBox.style.display = "block";
-      setTimeout(() => {
-        notiBox.style.display = "none";
-      }, 6000);
-    }
-
-    socket.on("nueva_solicitud", (data) => {
-      mostrarNotificacion("🆕 Nueva solicitud creada (#" + data.solicitud_id + ")");
-    });
-
-    socket.on("nuevo_registro", (data) => {
-      mostrarNotificacion("👤 Nuevo usuario registrado: " + data.nombre);
-    });
-
-    socket.on("servicio_finalizado", (data) => {
-      mostrarNotificacion("✅ Servicio #" + data.solicitud_id + " finalizado con calificación: " + data.calificacion);
-    });
-
-    socket.on("notificacion_admin", function(data) {
-      alert(data.mensaje);
-    });
-  </script>
+    <form action="/admin_calificaciones" method="get">
+        <button style="margin: 10px; background-color: #007bff; color: white; padding: 12px; border-radius: 8px; border: none; font-size: 16px;">
+            📊 Ver Calificaciones
+        </button>
+    </form>
 
 </body>
 </html>

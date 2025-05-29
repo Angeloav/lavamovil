@@ -1,91 +1,75 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Admin - Solicitudes</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body { font-family: 'Open Sans', sans-serif; background-color: #f2f2f2; margin: 0; padding: 0; }
-    header { background-color: #007BFF; color: white; padding: 20px; text-align: center; }
-    .container {
-      max-width: 1000px;
-      margin: 30px auto;
-      background-color: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    h2 { margin-bottom: 20px; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
-    }
-    th { background-color: #007bff; color: white; }
-    tr:nth-child(even) { background-color: #f9f9f9; }
-    form { display: inline; }
-    button {
-      background-color: crimson;
-      color: white;
-      padding: 6px 10px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    button:hover { background-color: #b30000; }
-    .back-link {
-      display: inline-block;
-      margin-top: 20px;
-      text-decoration: none;
-      background-color: #6c757d;
-      color: white;
-      padding: 8px 15px;
-      border-radius: 5px;
-    }
-    .back-link:hover {
-      background-color: #5a6268;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Solicitudes Activas - Admin</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        table {
+            width: 90%;
+            max-width: 800px;
+            margin: 0 auto;
+            border-collapse: collapse;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ccc;
+            font-size: 14px;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .volver {
+            margin-top: 30px;
+            padding: 10px 20px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .volver:hover {
+            background-color: #495057;
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <h1>Solicitudes de Servicios</h1>
-  </header>
 
-  <div class="container">
-    <h2>Lista de Solicitudes</h2>
+    <h1>Solicitudes Activas</h1>
+
     <table>
-      <thead>
         <tr>
-          <th>ID</th>
-          <th>Cliente</th>
-          <th>Lavador</th>
-          <th>Estado</th>
-          <th>Calificación</th>
-          <th>Acción</th>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Lavador</th>
+            <th>Estado</th>
         </tr>
-      </thead>
-      <tbody>
-        {% for solicitud in solicitudes %}
+        {% for s in solicitudes %}
         <tr>
-          <td>{{ solicitud.id }}</td>
-          <td>{{ solicitud.cliente.nombre if solicitud.cliente else 'Desconocido' }}</td>
-          <td>{{ solicitud.lavador.nombre if solicitud.lavador else 'No asignado' }}</td>
-          <td>{{ solicitud.estado }}</td>
-          <td>{{ solicitud.calificacion or 'N/A' }}</td>
-          <td>
-            <form action="{{ url_for('eliminar_solicitud') }}" method="post" onsubmit="return confirm('¿Estás seguro de eliminar esta solicitud?')">
-              <input type="hidden" name="solicitud_id" value="{{ solicitud.id }}">
-              <button type="submit">🗑 Eliminar</button>
-            </form>
-          </td>
+            <td>{{ s.id }}</td>
+            <td>{{ s.cliente_nombre }} {{ s.cliente_apellido }}</td>
+            <td>{{ s.lavador_nombre }} {{ s.lavador_apellido }}</td>
+            <td>{{ s.estado }}</td>
         </tr>
         {% endfor %}
-      </tbody>
     </table>
 
-    <a class="back-link" href="{{ url_for('admin_dashboard') }}">⬅ Volver al Panel</a>
-  </div>
+    <button class="volver" onclick="window.location.href='/admin_dashboard'">Volver al Panel</button>
+
 </body>
 </html>

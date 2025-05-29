@@ -1,149 +1,353 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Cliente - LavaMóvil</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cliente - LavaMovil</title>
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBmVCNKb_sjx-vE5b1YoJpPUgm8Ub09ElE"></script>
   <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; background-color: #f9f9f9; }
-    header { background-color: #007BFF; color: white; padding: 10px; text-align: center; }
-    .container { padding: 20px; max-width: 800px; margin: auto; }
-    #map { height: 60vh; width: 100%; border-radius: 10px; }
-    button {
-      margin: 10px 5px; padding: 10px 20px; font-size: 16px;
-      border: none; border-radius: 5px; cursor: pointer;
-    }
-    #solicitar-btn { background-color: #007BFF; color: white; }
-    #finalizar-btn { background-color: #28a745; color: white; }
-    #cancelar-btn { background-color: #dc3545; color: white; }
+    body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #121212;
+  color: #ffffff;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+    .notificacion { background-color: #d1f0f8; color: #000; padding: 15px; font-size: 14px; text-align: left; border-radius: 0 0 15px 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .notificacion strong { color: #c0392b; display: block; }
+    h1 { font-size: 24px; color: #ffffff; margin-top: 20px; } p { color: #ffffff; font-size: 14px; margin-bottom: 20px; } h3 { color: #ffffff; }
+    #map { height: 250px; width: 90%; max-width: 360px; margin: 0 auto 20px; border-radius: 20px; border: 1px solid #333; box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
+    button { display: flex; align-items: center; justify-content: center; width: 85%; max-width: 320px; margin: 10px auto; padding: 14px; border: 2px solid #aaa; border-radius: 30px; font-size: 16px; font-weight: 600; color: white; cursor: pointer; transition: all 0.3s ease; box-sizing: border-box; }
+    .solicitar { background-color: #007bff; }
+    .cancelar { background-color: #dc3545; }
+    .finalizar { background-color: #28a745; }
+    .cerrar { background-color: #616161; }
+    .solicitar:hover { background-color: #0056b3; }
+    .cancelar:hover { background-color: #a71d2a; }
+    .finalizar:hover { background-color: #1c7c31; }
+    .cerrar:hover { background-color: #1d2124; }
+    #formularioCalificacion, .calificacion-box { width: 85%; max-width: 320px; margin: 20px auto; box-sizing: border-box; }
+    select, textarea { width: 100%; max-width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: 1px solid #555; font-size: 14px; background-color: #2a2a2a; color: #ffffff; box-sizing: border-box; }
   </style>
 </head>
-<body>
-  <header>
-    <h1>Cliente - LavaMóvil</h1>
-    <p>Bienvenido, <strong>{{ user.nombre|capitalize }}</strong></p>
-    <a href="{{ url_for('chat') }}"><button id="chat-btn">Chat</button></a>
-    <a href="{{ url_for('historial') }}"><button id="historial-btn">Historial</button></a>
-    <a href="{{ url_for('logout') }}"><button id="logout-btn">Cerrar sesión</button></a>
-  </header>
+<body style="margin: 0; padding: 0; overflow-x: hidden; background-color: #1e1e2f; color: white;">
+{% include 'notificaciones.html' %}
+<div id="mensajeLavador" class="notificacion" style="display: none;">
+  <strong>Lavador en camino</strong>
+  El lavador ha aceptado tu solicitud y va en camino
+</div>
+<h1>Bienvenido {{ cliente.nombre }} {{ cliente.apellido }}</h1>
+<p>ID de Usuario: {{ cliente.id }}</p>
+<div id="map"></div>
 
-  <div class="container">
-    <div id="map"></div>
-    <button id="solicitar-btn">Solicitar Servicio</button>
-    <button id="finalizar-btn">Finalizar Servicio / Calificar</button>
-    <button id="cancelar-btn">Cancelar Solicitud</button>
+<button class="solicitar" onclick="solicitarServicio()">🚗 Solicitar Servicio</button>
+<button class="cancelar" onclick="cancelarSolicitud()">🗑 Cancelar Solicitud</button>
+<button class="finalizar" onclick="mostrarFormularioCalificacion()">⭐ Finalizar Servicio / Calificar</button>
+<button class="cerrar" onclick="cerrarSesion()">➡️ Cerrar Sesión</button>
 
-    <div id="lavador-info" style="display: none; background-color: #e0f7fa; padding: 15px; border-radius: 10px; margin-top: 20px;">
-      <h3>🚗 Lavador Asignado</h3>
-      <p><strong>Nombre:</strong> <span id="lavador-nombre"></span></p>
-      <p><strong>Teléfono:</strong> <span id="lavador-telefono"></span></p>
-      <p><strong>Dirección:</strong> <span id="lavador-direccion"></span></p>
-      <p><strong>Descripción:</strong> <span id="lavador-descripcion"></span></p>
-      <p><strong>ID Personal:</strong> <span id="lavador-id"></span></p>
-    </div>
-  </div>
+<form action="/chat" method="get">
+  <input type="hidden" name="rol" value="cliente">
+  <button id="botonChat" type="submit" style="background-color: #6c63ff; color: white; padding: 10px; border-radius: 10px;">
+    💬 Chat con Lavador
+  </button>
+</form>
 
-  <script>
-    let map;
-    let lavadorMarker = null;
+<div id="formularioCalificacion" style="display: none;">
+  <h3>Califica el servicio</h3>
+  <select id="calificacion">
+    <option value="Excelente">Excelente</option>
+    <option value="Bueno">Bueno</option>
+    <option value="Regular">Regular</option>
+    <option value="Malo">Malo</option>
+  </select>
+  <textarea id="comentario" placeholder="Comentario (opcional)"></textarea>
+  <button class="finalizar" onclick="enviarCalificacion()">Enviar Calificación</button>
+</div>
+<audio id="sonidoMensaje" src="/static/sounds/nuevo_mensaje.mp3"></audio>
+<script>
 
-    function initMap() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-          const pos = { lat: position.coords.latitude, lng: position.coords.longitude };
-          map = new google.maps.Map(document.getElementById("map"), { center: pos, zoom: 14 });
-          new google.maps.Marker({ position: pos, map, title: "Tu ubicación actual" });
-        }, function() {
-          alert("Error al obtener tu ubicación.");
-        });
-      } else {
-        alert("Tu navegador no soporta geolocalización.");
-      }
-    }
+const socket = io();
+const clienteId = {{ cliente.id }};
+const lavadorId = {{ solicitud_activa.lavador_id if solicitud_activa else 'null' }};
+const tieneSolicitud = {{ 'true' if solicitud_activa else 'false' }};
 
-    document.getElementById("solicitar-btn").onclick = function() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-          fetch("/solicitar", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              latitud: position.coords.latitude,
-              longitud: position.coords.longitude
-            })
-          })
-          .then(res => res.json())
-          .then(data => alert("✅ Solicitud enviada: " + data.mensaje))
-          .catch(err => alert("❌ Error al solicitar el servicio"));
-        });
-      }
-    };
-
-    document.getElementById("cancelar-btn").onclick = function() {
-      fetch("/cancelar_solicitud", { method: "POST" })
-        .then(res => res.json())
-        .then(data => alert(data.mensaje || data.error))
-        .catch(console.error);
-    };
-
-    document.getElementById("finalizar-btn").onclick = function() {
-      fetch("/solicitud_activa")
-        .then(res => res.json())
-        .then(data => {
-          if (data.error) return alert("❌ No tienes solicitud activa.");
-          const calificacion = prompt("¿Cómo calificas el servicio? (1-5):");
-          if (calificacion >= 1 && calificacion <= 5) {
-            fetch("/calificar", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ solicitud_id: data.solicitud_id, calificacion: parseInt(calificacion) })
-            })
-            .then(r => r.json())
-            .then(d => alert("✅ " + d.mensaje));
-          } else {
-            alert("⚠️ Calificación inválida.");
-          }
-        });
-    };
-
-    const socket = io();
-
-    socket.on("lavador_ubicacion", data => {
-      const position = { lat: data.lat, lng: data.lng };
-      if (!map) return;
-      if (!lavadorMarker) {
-        lavadorMarker = new google.maps.Marker({
-          position: position,
-          map: map,
-          icon: "https://cdn-icons-png.flaticon.com/512/743/743007.png",
-          title: "Vehículo del lavador"
-        });
-      } else {
-        lavadorMarker.setPosition(position);
-      }
-    });
-
-    // ✅ Aquí escuchamos cuando el lavador acepta y mostramos la información
-    socket.on("solicitud_aceptada", data => {
-      document.getElementById("lavador-info").style.display = "block";
-      document.getElementById("lavador-nombre").textContent = data.lavador.nombre;
-      document.getElementById("lavador-telefono").textContent = data.lavador.telefono;
-      document.getElementById("lavador-direccion").textContent = data.lavador.direccion;
-      document.getElementById("lavador-descripcion").textContent = data.lavador.descripcion;
-      document.getElementById("lavador-id").textContent = data.lavador.id_personal;
-    });
-
-    window.onload = initMap;
-
-  navigator.geolocation.watchPosition(function(position) {
-  socket.emit('cliente_ubicacion', {
-    lat: position.coords.latitude,
-    lng: position.coords.longitude
+if (lavadorId !== null) {
+  socket.emit("unirse_sala_privada", {
+    cliente_id: clienteId,
+    lavador_id: lavadorId
   });
-});
+}
 
-  </script>
+socket.on("iniciar_movimiento", (data) => {
+    if (data.cliente_id === clienteId && data.lavador_id === lavadorId) {
+      iniciarMovimientoCarritoCamioncito();
+    }
+  });
+ 
+  setTimeout(() => {
+    if (!tieneSolicitud) {
+      iniciarMovimientoCarritoCamioncito();
+    }
+  }, 3000);
+
+let map, lavadorMarker, clienteMarker;
+let rutaPolyline;
+
+function initMap() { 
+    map = new google.maps.Map(document.getElementById('map'), {
+        center: { lat: 19.4326, lng: -99.1332 },
+        zoom: 15
+    });
+
+    const permisoUbicacion = confirm("🚗 LavaMovil necesita acceso a tu ubicación para encontrar al lavador más cercano. ¿Deseas permitirlo?");
+    if (!permisoUbicacion) return;
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+            console.log("📍 Cliente localizado en lat:", position.coords.latitude, "lng:", position.coords.longitude);
+            const clientePos = { lat: position.coords.latitude, lng: position.coords.longitude };
+            map.setCenter(clientePos);
+            clienteMarker = new google.maps.Marker({
+                position: clientePos,
+                map: map,
+                title: "Tu ubicación",
+                icon: {
+                    url: "/static/icons/carrito_icono.png",
+                    scaledSize: new google.maps.Size(50, 50)
+                }
+            });
+            obtenerUbicacionCliente();
+
+            actualizarUbicacion(clientePos.lat, clientePos.lng);
+
+            setInterval(() => {
+              if (typeof lavadorId !== 'undefined' && lavadorId !== "none") {
+                console.log("✅ Llamando obtenerUbicacionLavador...");
+                obtenerUbicacionLavador();
+              } else {
+                console.log("⚠️ lavadorId inválido:", lavadorId);
+              }
+            }, 5000);
+        }, error => {
+            console.warn("❌ Error al obtener ubicación:", error);
+            console.warn("📡 GPS no disponible. Usando ubicación fija de respaldo.");
+
+            const clientePos = { lat: 43.0961502, lng: -75.2103744 }; // coordenadas fijas
+            map.setCenter(clientePos);
+            clienteMarker = new google.maps.Marker({
+                position: clientePos,
+                map: map,
+                title: "Tu ubicación (estimada)",
+                icon: {
+                    url: "/static/icons/carrito_icono.png",
+                    scaledSize: new google.maps.Size(50, 50)
+                }
+            });
+
+            actualizarUbicacion(clientePos.lat, clientePos.lng);
+
+            setInterval(() => {
+              const solicitudAceptada = "{{ 'true' if solicitud_activa and solicitud_activa.estado == 'aceptado' else 'false' }}";
+              if (solicitudAceptada === "true") {
+                  obtenerUbicacionLavador();
+              }
+            }, 5000);
+        }, {
+            enableHighAccuracy: true,
+            timeout: 30000,
+            maximumAge: 0
+        });  // ✅ cierre de getCurrentPosition
+    } else {
+        alert("🚫 Tu dispositivo no soporta geolocalización.");
+    }
+}  // ✅ cierre final de initMap()
+
+function iniciarMovimientoCarritoCamioncito() {
+  console.log("✅ Movimiento iniciado desde el cliente");
+
+  setInterval(() => {
+    const solicitudAceptada = "{{ 'true' if solicitud_activa and solicitud_activa.estado == 'aceptado' else 'false' }}";
+    if (solicitudAceptada === "true" && lavadorId !== "none") {
+      obtenerUbicacionLavador();
+    }
+  }, 5000);
+}
+
+function actualizarUbicacion(lat, lng) {
+    fetch('/actualizar_ubicacion_cliente', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ latitud: lat, longitud: lng })
+    });
+}
+function actualizarUbicacionCliente() {
+    navigator.geolocation.getCurrentPosition(pos => {
+        const nuevaUbicacion = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        clienteMarker.setPosition(nuevaUbicacion);
+        actualizarUbicacion(nuevaUbicacion.lat, nuevaUbicacion.lng);
+    });
+}
+function obtenerUbicacionLavador() {
+  if (lavadorId === "none") return;  // 🛑 No hay solicitud activa
+
+  fetch(`/obtener_ubicacion_lavador?user_id=${lavadorId}`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.lat && data.lng) {
+        const lavadorPos = { lat: data.lat, lng: data.lng };
+
+        if (!lavadorMarker) {
+          lavadorMarker = new google.maps.Marker({
+            position: lavadorPos,
+            map: map,
+            title: "Lavador en camino",
+            icon: {
+              url: "/static/icons/camioncito_icono.png",
+              scaledSize: new google.maps.Size(50, 50)
+            }
+          });
+        } else {
+          lavadorMarker.setPosition(lavadorPos);
+        }
+
+        // Dibujar línea
+        if (clienteMarker && lavadorMarker) {
+          if (rutaPolyline) rutaPolyline.setMap(null);
+          rutaPolyline = new google.maps.Polyline({
+            path: [lavadorPos, clienteMarker.getPosition()],
+            geodesic: true,
+            strokeColor: "#00ff00",
+            strokeOpacity: 0.8,
+            strokeWeight: 4
+          });
+          rutaPolyline.setMap(map);
+        }
+      }
+    })
+    .catch(err => {
+      console.warn("⚠️ No se puede obtener ubicación del lavador:", err);
+    });
+}
+
+function solicitarServicio() {
+  fetch("/solicitar_servicio", { method: "POST" })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert("🚗 Solicitud enviada correctamente.");
+      } else {
+        alert("❌ No se pudo enviar la solicitud.");
+      }
+    });
+}
+
+function cancelarSolicitud() {
+  console.log("🧪 Ejecutando cancelarSolicitud()");
+  fetch("/cancelar_solicitud", { method: "POST" })
+    .then(response => {
+      if (response.ok) {
+        alert("🛑 Solicitud cancelada.");
+        location.reload();
+      } else {
+        alert("❌ Error al cancelar la solicitud.");
+      }
+    });
+}
+function mostrarFormularioCalificacion() {
+  document.getElementById("formularioCalificacion").style.display = "block";
+}
+function enviarCalificacion() {
+  const calificacion = document.getElementById("calificacion").value;
+  const comentario = document.getElementById("comentario").value;
+
+  fetch("/finalizar_servicio", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      calificacion: calificacion,
+      comentario: comentario
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(data.mensaje);
+    if (data.mensaje.includes("calificado")) {
+      window.location.href = "/cliente_dashboard";
+    }
+  })
+  .catch(err => {
+    alert("❌ Error al enviar la calificación.");
+    console.error(err);
+  });
+}
+
+function cerrarSesion() {
+  window.location.href = "/seleccion_rol";
+}
+document.addEventListener('DOMContentLoaded', initMap);
+socket.emit("unirse_sala_mensajes", { user_id: clienteId });
+socket.on("nuevo_mensaje_directo", function(data) {
+  if (data.destinatario_id === clienteId) {
+    const botonChat = document.getElementById("botonChat");
+    if (botonChat && !document.getElementById("burbujaChat")) {
+      const burbuja = document.createElement("span");
+      burbuja.id = "burbujaChat";
+      burbuja.textContent = "🔴";
+      burbuja.style.marginLeft = "5px";
+      botonChat.appendChild(burbuja);
+    }
+    const sonido = document.getElementById("sonidoMensaje");
+    if (sonido) sonido.play();
+  }
+});
+document.addEventListener('click', () => {
+  const sonido = document.getElementById("sonidoMensaje");
+  if (sonido) sonido.play().catch(() => {});
+}, { once: true });
+setInterval(() => {
+  fetch("/verificar_mensajes_nuevos")
+    .then(res => res.json())
+    .then(data => {
+      if (data.mensajes_nuevos && !document.getElementById("burbujaChat")) {
+        const burbuja = document.createElement("span");
+        burbuja.textContent = "🔴";
+        burbuja.id = "burbujaChat";
+        burbuja.style.marginLeft = "5px";
+        const boton = document.getElementById("botonChat");
+        if (boton) boton.appendChild(burbuja);
+      }
+    });
+}, 5000);
+
+function enviarCalificacion() {
+  const calificacion = document.getElementById("calificacion").value;
+  const comentario = document.getElementById("comentario").value;
+
+  fetch("/finalizar_servicio", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      calificacion: calificacion,
+      comentario: comentario
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(data.mensaje);
+    if (data.mensaje.includes("calificado")) {
+      window.location.href = "/cliente_dashboard";
+    }
+  })
+  .catch(err => {
+    alert("❌ Error al enviar la calificación.");
+    console.error(err);
+  });
+}
+</script>
+
 </body>
 </html>
+
