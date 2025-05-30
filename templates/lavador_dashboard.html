@@ -79,7 +79,9 @@
 const socket = io();
 const lavadorId = {{ lavador.id }};
 const clienteId = {{ solicitud_activa.cliente_id if solicitud_activa else 'null' | tojson }};
+</script>
 
+<script>
 function cambiarEstado(estado) {
   fetch('/cambiar_estado', {
     method: 'POST',
