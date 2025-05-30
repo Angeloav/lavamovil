@@ -486,6 +486,24 @@ try {
 } catch (error) {
   console.warn("❌ Error uniendo a la sala de mensajes:", error);
 }
+
+function actualizarUbicacion(lat, lng) {
+  fetch('/actualizar_ubicacion', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ lat: lat, lng: lng })
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log("✅ Ubicación actualizada correctamente en la base de datos.");
+  })
+  .catch(err => {
+    console.error("❌ Error actualizando ubicación:", err);
+  });
+}
+
 </script>
 
 </body>
