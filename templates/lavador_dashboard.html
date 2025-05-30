@@ -339,13 +339,10 @@ console.log("⏳ Ejecutando obtenerUbicacionCliente...");
 
 setInterval(obtenerUbicacionLavador, 5000);
 
-<script>
 try {
   const solicitudAceptada = "{{ 'true' if solicitud_activa and solicitud_activa.estado == 'aceptado' else 'false' }}";
   const usuarioId = lavadorId;
-</script>
 
-<script>
 socket.on('nueva_solicitud', function(data) {
   const div = document.createElement('div');
   div.innerHTML = `<div><strong>${data.nombre} ${data.apellido}</strong><br>Tel: ${data.telefono}<br><button class="aceptar" onclick="aceptar(${data.solicitud_id})">Aceptar</button></div>`;
