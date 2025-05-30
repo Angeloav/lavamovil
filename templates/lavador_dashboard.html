@@ -75,10 +75,10 @@
 <div id="calificaciones" class="calificacion-box"></div>
 <audio id="sonidoMensaje" src="/static/sounds/nuevo_mensaje.mp3"></audio>
 
+<script>
 const socket = io();
 const lavadorId = {{ lavador.id }};
 const clienteId = {{ solicitud_activa.cliente_id if solicitud_activa else 'null' | tojson }};
-let map, lavadorMarker, clienteMarker, rutaPolyline;
 
 function cambiarEstado(estado) {
   fetch('/cambiar_estado', {
@@ -142,7 +142,7 @@ function abrirChat() {
   }
 }
 
-
+let map, lavadorMarker, clienteMarker, rutaPolyline;
 
 function initMap() {
   map = new google.maps.Map(document.getElementById('map'), {
