@@ -55,7 +55,6 @@
 <h1>Bienvenido Lavador {{ lavador.nombre }} {{ lavador.apellido }}</h1>
 <p>ID de Usuario: {{ lavador.id }}</p>
 <div id="estado">Estado: <span id="estadoServicio">{{ lavador.estado.capitalize() }}</span></div>
-
 <div id="notificacion">¡Nueva solicitud recibida!</div>
 <div id="map"></div>
 
@@ -71,7 +70,53 @@
   </button>
 </form>
 
-<script>
+
+<div id="solicitudes"></div>
+<div id="calificaciones" class="calificacion-box"></div>
+<audio id="sonidoMensaje" src="/static/sounds/nuevo_mensaje.mp3"></audio>
+
+const socket = io();
+const lavadorId = {{ lavador.id }};
+const clienteId = {{ solicitud_activa.cliente_id if solicitud_activa else 'null' | tojson }};
+let map, lavadorMarker, clienteMarker, rutaPolyline;
+
+function cambiarEstado(estado) {
+  fetch('/cambiar_estado', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ estado: estado })
+  })
+  .then(response => {
+    if (response.ok) {
+      document.getElementById("estadoServicio").innerText = estado.charAt(0).toUpperCase() + estado.slice(1);
+      alert("Estado actualizado a: " + estado);
+    } else {
+      alert("❌ Error al cambiar el estado.");
+    }
+  });
+}
+
+function verCalificaciones() {
+  fetch(`/ver_calificaciones/${lavadorId}`)
+    .then(response => response.json())
+    .then(data => {
+      const div = document.getElementById("calificaciones");
+      div.innerHTML = "<h3>Calificaciones</h3>";
+      if (data.length === 0) {
+        div.innerHTML += "<p>No tienes calificaciones aún.</p>";
+      } else {
+        data.forEach(item => {
+          div.innerHTML += `<p><strong>${item.nombre} ${item.apellido}:</strong> ${item.calificacion} - ${item.comentario}</p>`;
+        });
+      }
+      div.style.display = "block";
+    });
+}
+
+function cerrarSesion() {
+  window.location.href = "/logout";
+}
+
 function abrirChat() {
   const lavadorId = {{ lavador.id }};
   if (clienteId !== null) {
@@ -80,15 +125,6 @@ function abrirChat() {
     alert("❌ No hay una solicitud activa.");
   }
 }
-</script>
-
-<div id="solicitudes"></div>
-<div id="calificaciones" class="calificacion-box"></div>
-<audio id="sonidoMensaje" src="/static/sounds/nuevo_mensaje.mp3"></audio>
-
-<script>
-const socket = io();
-const lavadorId = {{ lavador.id }};
 
 // Unirse a la sala de notificaciones del lavador
 socket.on('bauche_aprobado', function(data) {
@@ -98,16 +134,15 @@ socket.on('bauche_aprobado', function(data) {
     }
 });
 
-// Unirse a la sala de chat privado
-const clienteId = {{ solicitud_activa.cliente_id if solicitud_activa else "'null'" }};
-if (clienteId !== null) {
-  socket.emit("unirse_sala_privada", {
-    cliente_id: clienteId,
-    lavador_id: lavadorId
-  });
+function abrirChat() {
+  if (clienteId !== "") {
+    window.location.href = `/chat_privado/${clienteId}/${lavadorId}`;
+  } else {
+    alert("❌ No hay una solicitud activa.");
+  }
 }
 
-let map, lavadorMarker, clienteMarker, rutaPolyline;
+
 
 function initMap() {
   map = new google.maps.Map(document.getElementById('map'), {
@@ -350,6 +385,10 @@ function iniciarMovimientoManual(solicitudId) {
     });
 }
 
+function volverInicio() {
+  window.location.href = "/";
+}
+
 function cambiarEstado(estado) {
   fetch('/cambiar_estado', {
     method: 'POST',
@@ -364,31 +403,6 @@ function cambiarEstado(estado) {
       alert("❌ Error al cambiar el estado.");
     }
   });
-}
-
-function cerrarSesion() {
-  window.location.href = "/logout";
-}
-
-function volverInicio() {
-  window.location.href = "/";
-}
-
-function verCalificaciones() {
-  fetch(`/ver_calificaciones/${lavadorId}`)
-    .then(response => response.json())
-    .then(data => {
-      const div = document.getElementById("calificaciones");
-      div.innerHTML = "<h3>Calificaciones</h3>";
-      if (data.length === 0) {
-        div.innerHTML += "<p>No tienes calificaciones aún.</p>";
-      } else {
-        data.forEach(item => {
-          div.innerHTML += `<p><strong>${item.nombre} ${item.apellido}:</strong> ${item.calificacion} - ${item.comentario}</p>`;
-        });
-      }
-      div.style.display = "block";
-    });
 }
 
 document.addEventListener('DOMContentLoaded', initMap);
@@ -449,14 +463,7 @@ setInterval(() => {
       }
     });
 }, 5000);
-
-// 🔔 Unión automática a sala privada para recibir mensajes sin abrir el chat
-try {
-  const solicitudAceptada = "{{ 'true' if solicitud_activa and solicitud_activa.estado == 'aceptado' else 'false' }}";
-  const clienteId = "{{ solicitud_activa.cliente_id if solicitud_activa else 'none' }}";
-  const lavadorId = {{ lavador.id }};
-  const usuarioId = lavadorId;
-
+ 
   if (solicitudAceptada === "true" && clienteId !== "none") {
     socket.emit("unirse_sala_privada", {
       cliente_id: parseInt(clienteId),
