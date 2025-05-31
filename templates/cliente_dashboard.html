@@ -119,8 +119,7 @@ function initMap() {
                     scaledSize: new google.maps.Size(50, 50)
                 }
             });
-            obtenerUbicacionCliente();
-
+            
             // ✅ ACTUALIZAR UBICACIÓN CON CLAVES CORRECTAS
             fetch('/actualizar_ubicacion', {
               method: 'POST',
