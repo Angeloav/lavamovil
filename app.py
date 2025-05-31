@@ -775,7 +775,7 @@ def chat():
     rol = request.args.get('rol')
 
     if rol == 'cliente':
-        cliente_id = session.get('cliente_id')
+        cliente_id = session.get('usuario_id')
         if cliente_id:
             cliente = Usuario.query.get(cliente_id)
             solicitud = Solicitud.query.filter_by(cliente_id=cliente.id, estado='aceptado').first()
