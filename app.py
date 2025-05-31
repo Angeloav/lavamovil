@@ -303,14 +303,18 @@ def logout():
     session.pop('admin', None)
     return redirect('/')
 
-@app.route('/actualizar_ubicacion', methods=['POST'])
+@app.route('/actualizar_ubicacion', methods=['POST']) 
 def actualizar_ubicacion():
     lavador_id = session.get('lavador_id')
+    print("🧠 lavador_id en sesión:", lavador_id)  # Para verificar la sesión
+
     if not lavador_id:
         print("🚨 Error: No se detecta lavador en sesión.")
         return jsonify({'error': 'No autorizado'}), 401
 
     data = request.get_json()
+    print("📩 JSON recibido:", data)  # Para ver si llegan latitud y longitud
+
     if not data:
         print("🚨 Error: No se recibieron datos de ubicación.")
         return jsonify({'error': 'No se proporcionaron datos'}), 400
@@ -374,6 +378,7 @@ def solicitar_servicio():
     # ⚠️ Verificar ubicación válida
     if not cliente.latitud or not cliente.longitud:
         print("❌ Cliente sin ubicación registrada.")
+        print(f"🔍 Validando ubicación - lat: {cliente.latitud}, lng: {cliente.longitud}")
         return jsonify({'error': 'Ubicación del cliente no disponible.'}), 400
 
     print(f"🌍 Ubicación del cliente: {cliente.latitud}, {cliente.longitud}")
@@ -546,21 +551,18 @@ def obtener_ubicacion_lavador():
 @app.route('/obtener_ubicacion_cliente')
 def obtener_ubicacion_cliente():
     lavador_id = session.get('lavador_id')
-    if not lavador_id:
-        print("❌ El usuario no es un lavador")
-        return "Acceso denegado", 403
+
+    print("🧪 lavador_id en sesión:", lavador_id)
 
     solicitud = Solicitud.query.filter_by(lavador_id=lavador_id, estado='aceptado').first()
     if not solicitud:
-        print("❌ No hay solicitud aceptada para este lavador")
         return jsonify({"error": "No hay solicitud activa"}), 404
 
     cliente = Usuario.query.get(solicitud.cliente_id)
     if cliente and cliente.latitud and cliente.longitud:
         print(f"📍 Cliente localizado en lat: {cliente.latitud}, lng: {cliente.longitud}")
         return jsonify({"lat": cliente.latitud, "lng": cliente.longitud})
-    
-    print("❌ No se pudo obtener la ubicación del cliente")
+
     return jsonify({"error": "Ubicación no disponible"}), 404
 
 @app.route('/finalizar_servicio', methods=['POST'])
