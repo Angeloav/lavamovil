@@ -121,7 +121,17 @@ function initMap() {
             });
             obtenerUbicacionCliente();
 
-            actualizarUbicacion(clientePos.lat, clientePos.lng);
+            // ✅ ACTUALIZAR UBICACIÓN CON CLAVES CORRECTAS
+            fetch('/actualizar_ubicacion', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                latitud: clientePos.lat,
+                longitud: clientePos.lng
+              })
+            });
 
             setInterval(() => {
               if (typeof lavadorId !== 'undefined' && lavadorId !== "none") {
@@ -147,7 +157,17 @@ function initMap() {
                 }
             });
 
-            actualizarUbicacion(clientePos.lat, clientePos.lng);
+            // ✅ Guardar ubicación correctamente con claves exactas
+            fetch('/actualizar_ubicacion', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                latitud: clientePos.lat,
+                longitud: clientePos.lng
+              })
+            });
 
             setInterval(() => {
               const solicitudAceptada = "{{ 'true' if solicitud_activa and solicitud_activa.estado == 'aceptado' else 'false' }}";
