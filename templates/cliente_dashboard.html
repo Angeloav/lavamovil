@@ -140,8 +140,8 @@ function initMap() {
               .then(res => res.json())
               .then(data => {
                 console.log("✅ Ubicación del cliente enviada correctamente:", data);
-                solicitarServicio();  // 🔥 Llama aquí la función solo después de guardar ubicación
               })
+
               .catch(err => {
                 console.error("❌ Error al enviar ubicación antes de solicitar:", err);
                 alert("No se pudo guardar la ubicación.");
