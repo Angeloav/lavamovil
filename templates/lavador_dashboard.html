@@ -99,7 +99,7 @@ socket.on('bauche_aprobado', function(data) {
 });
 
 // Unirse a la sala de chat privado
-const clienteId = {{ solicitud_activa.cliente_id if solicitud_activa else "'null'" }};
+const clienteId = {{ (solicitud_activa.cliente_id if solicitud_activa else 'null') | tojson }};
 if (clienteId !== null) {
   socket.emit("unirse_sala_privada", {
     cliente_id: clienteId,
