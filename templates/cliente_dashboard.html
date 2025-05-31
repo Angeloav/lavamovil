@@ -136,17 +136,15 @@
 
   <script>
     const socket = io();
-    const clienteId   = {{ cliente.id }};
-    const lavadorId   = {{ solicitud_activa.lavador_id if solicitud_activa else 'null' }};
+    const clienteId     = {{ cliente.id }};
+    const lavadorId     = {{ solicitud_activa.lavador_id if solicitud_activa else 'null' }};
     const tieneSolicitud = {{ 'true' if solicitud_activa else 'false' }};
 
     // Cuando el servidor notifique que el lavador aceptó la solicitud,
     // mostramos el mensaje con animación y activamos el movimiento sin recargar la página.
     socket.on("notificacion_cliente", (data) => {
       if (data.cliente_id === clienteId && data.mensaje) {
-        // Mostramos notificación en pantalla:
         document.getElementById("mensajeLavador").style.display = "block";
-        // Iniciamos movimiento en tiempo real:
         iniciarMovimientoCarritoCamioncito();
       }
     });
@@ -216,8 +214,12 @@
 
             fetch('/actualizar_ubicacion', {
               method: 'POST',
+              credentials: 'include',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ latitud: lat, longitud: lng })
+              body: JSON.stringify({
+                latitud: lat,
+                longitud: lng
+              })
             })
             .then(res => res.json())
             .then(data => {
@@ -256,12 +258,9 @@
 
           fetch("/actualizar_ubicacion", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
             credentials: 'include',
-            body: JSON.stringify({
-              latitud: clientePos.lat,
-              longitud: clientePos.lng
-            })
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ latitud: clientePos.lat, longitud: clientePos.lng })
           })
           .then(res => res.json())
           .catch(() => {});
@@ -334,7 +333,9 @@
     function obtenerUbicacionLavador() {
       if (lavadorId === "none") return;
 
-      fetch(`/obtener_ubicacion_lavador?user_id=${lavadorId}`)
+      fetch(`/obtener_ubicacion_lavador?user_id=${lavadorId}`, {
+        credentials: 'include'
+      })
         .then(response => response.json())
         .then(data => {
           if (data.lat && data.lng) {
@@ -375,8 +376,9 @@
 
     function solicitarServicio() {
       fetch("/solicitar_servicio", {
-        method: "POST",   // ← aquí faltaba la coma
-        credentials: "include"
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" }
       })
       .then(response => response.json())
       .then(data => {
@@ -399,10 +401,14 @@
 
         fetch('/actualizar_ubicacion', {
           method: 'POST',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ latitud: lat, longitud: lng })
+          body: JSON.stringify({
+            latitud: lat,
+            longitud: lng
+          })
         })
         .then(res => res.json())
         .then(data => {
@@ -418,7 +424,10 @@
 
     function cancelarSolicitud() {
       console.log("🧪 Ejecutando cancelarSolicitud()");
-      fetch("/cancelar_solicitud", { method: "POST" })
+      fetch("/cancelar_solicitud", {
+        method: "POST",
+        credentials: "include"
+      })
         .then(response => {
           if (response.ok) {
             alert("🛑 Solicitud cancelada.");
@@ -439,6 +448,7 @@
 
       fetch("/finalizar_servicio", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           calificacion: calificacion,
@@ -486,7 +496,7 @@
     }, { once: true });
 
     setInterval(() => {
-      fetch("/verificar_mensajes_nuevos")
+      fetch("/verificar_mensajes_nuevos", { credentials: 'include' })
         .then(res => res.json())
         .then(data => {
           if (data.mensajes_nuevos && !document.getElementById("burbujaChat")) {
