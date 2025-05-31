@@ -252,15 +252,21 @@ function obtenerUbicacionLavador() {
 }
 
 function solicitarServicio() {
-  fetch("/solicitar_servicio", { method: "POST" })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        alert("🚗 Solicitud enviada correctamente.");
-      } else {
-        alert("❌ No se pudo enviar la solicitud.");
-      }
-    });
+  fetch("/solicitar_servicio", {
+    method: "POST"
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert("🚗 Solicitud enviada correctamente.");
+    } else {
+      alert("❌ No se pudo enviar la solicitud.");
+    }
+  })
+  .catch(error => {
+    console.error("❌ Error en la solicitud:", error);
+    alert("❌ Ocurrió un error inesperado.");
+  });
 }
 
 function cancelarSolicitud() {
