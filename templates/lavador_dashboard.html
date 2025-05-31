@@ -266,6 +266,23 @@ function obtenerUbicacionLavador() {
   }
 }
 
+function actualizarUbicacion(lat, lng) {
+  fetch('/actualizar_ubicacion', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ lat: lat, lng: lng })
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log("✅ Ubicación actualizada correctamente en la base de datos.");
+  })
+  .catch(err => {
+    console.error("❌ Error actualizando ubicación:", err);
+  });
+}
+
 function obtenerUbicacionCliente() {
 console.log("⏳ Ejecutando obtenerUbicacionCliente...");
   fetch('/obtener_ubicacion_cliente')
@@ -350,23 +367,6 @@ function iniciarMovimientoManual(solicitudId) {
     });
 }
 
-function actualizarUbicacion(lat, lng) {
-  fetch('/actualizar_ubicacion', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ lat: lat, lng: lng })
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log("✅ Ubicación actualizada correctamente en la base de datos.");
-  })
-  .catch(err => {
-    console.error("❌ Error actualizando ubicación:", err);
-  });
-}
-
 function cambiarEstado(estado) {
   fetch('/cambiar_estado', {
     method: 'POST',
@@ -426,26 +426,6 @@ socket.on("nuevo_mensaje_directo", function(data) {
     if (sonido) sonido.play();
   }
 });
-
-document.addEventListener('click', () => {
-  const sonido = document.getElementById("sonidoMensaje");
-  if (sonido) sonido.play().catch(() => {});
-}, { once: true });
-setInterval(() => {
-
-  fetch("/verificar_mensajes_nuevos")
-    .then(res => res.json())
-    .then(data => {
-      if (data.mensajes_nuevos && !document.getElementById("burbujaChat")) {
-        const burbuja = document.createElement("span");
-        burbuja.textContent = "🔴";
-        burbuja.id = "burbujaChat";
-        burbuja.style.marginLeft = "5px";
-        const boton = document.getElementById("botonChat");
-        if (boton) boton.appendChild(burbuja);
-      }
-    });
-}, 5000);
 
 document.addEventListener('click', () => { 
   const sonido = document.getElementById("sonidoMensaje");
