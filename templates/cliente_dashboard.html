@@ -43,7 +43,7 @@
 <p>ID de Usuario: {{ cliente.id }}</p>
 <div id="map"></div>
 
-<button class="solicitar" onclick="guardarUbicacionYEnviar()">🚗 Solicitar Servicio</button>
+<button class="solicitar" onclick="esperarYSolicitar()">🚗 Solicitar Servicio</button>
 <button class="cancelar" onclick="cancelarSolicitud()">🗑 Cancelar Solicitud</button>
 <button class="finalizar" onclick="mostrarFormularioCalificacion()">⭐ Finalizar Servicio / Calificar</button>
 <button class="cerrar" onclick="cerrarSesion()">➡️ Cerrar Sesión</button>
@@ -199,6 +199,13 @@ function initMap() {
         alert("🚫 Tu dispositivo no soporta geolocalización.");
     }
 }  // ✅ cierre final de initMap()
+
+function esperarYSolicitar() {
+  console.log("⌛ Esperando 1 segundo antes de enviar solicitud...");
+  setTimeout(() => {
+    solicitarServicio();
+  }, 1000); // Espera 1 segundo
+}
 
 function iniciarMovimientoCarritoCamioncito() {
   console.log("✅ Movimiento iniciado desde el cliente");
