@@ -171,17 +171,13 @@ function initMap() {
                     scaledSize: new google.maps.Size(50, 50)
                 }
             });
-
-            // ✅ Guardar ubicación correctamente con claves exactas
-            fetch('/actualizar_ubicacion', {
-              method: 'POST',
+            fetch("/actualizar_ubicacion", {
+              method: "POST",
               headers: {
-                'Content-Type': 'application/json'
+                "Content-Type": "application/json"
               },
-              body: JSON.stringify({
-                latitud: clientePos.lat,
-                longitud: clientePos.lng
-              })
+              credentials: 'include',
+              body: JSON.stringify({ latitud: clientePos.lat, longitud: clientePos.lng })
             });
 
             setInterval(() => {
