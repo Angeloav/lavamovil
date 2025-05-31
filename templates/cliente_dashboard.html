@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+
   <!-- Ícono de pestaña (favicon) -->
   <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
-  
+
   <title>Cliente - LavaMovil</title>
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBmVCNKb_sjx-vE5b1YoJpPUgm8Ub09ElE"></script>
   <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
@@ -15,61 +15,60 @@
       font-family: 'Segoe UI', sans-serif;
       background-color: #121212;
       color: #ffffff;
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       text-align: center;
     }
-    .notificacion { 
-      background-color: #d1f0f8; 
-      color: #000; 
-      padding: 15px; 
-      font-size: 14px; 
-      text-align: left; 
-      border-radius: 0 0 15px 15px; 
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+    .notificacion {
+      background-color: #d1f0f8;
+      color: #000;
+      padding: 15px;
+      font-size: 14px;
+      text-align: left;
+      border-radius: 0 0 15px 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    .notificacion strong { 
-      color: #c0392b; 
-      display: block; 
+    .notificacion strong {
+      color: #c0392b;
+      display: block;
     }
     h1 {
-      font-size: 24px; 
-      color: #ffffff; 
-      margin-top: 20px; 
+      font-size: 24px;
+      color: #ffffff;
+      margin-top: 20px;
     }
     p {
-      color: #ffffff; 
-      font-size: 14px; 
-      margin-bottom: 20px; 
+      color: #ffffff;
+      font-size: 14px;
+      margin-bottom: 20px;
     }
     h3 {
-      color: #ffffff; 
+      color: #ffffff;
     }
     #map {
-      height: 250px; 
-      width: 90%; 
-      max-width: 360px; 
-      margin: 0 auto 20px; 
-      border-radius: 20px; 
-      border: 1px solid #333; 
-      box-shadow: 0 4px 10px rgba(0,0,0,0.4); 
+      height: 250px;
+      width: 90%;
+      max-width: 360px;
+      margin: 0 auto 20px;
+      border-radius: 20px;
+      border: 1px solid #333;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
     }
     button {
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      width: 85%; 
-      max-width: 320px; 
-      margin: 10px auto; 
-      padding: 14px; 
-      border: 2px solid #aaa; 
-      border-radius: 30px; 
-      font-size: 16px; 
-      font-weight: 600; 
-      color: white; 
-      cursor: pointer; 
-      transition: all 0.3s ease; 
-      box-sizing: border-box; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 85%;
+      max-width: 320px;
+      margin: 10px auto;
+      padding: 14px;
+      border: 2px solid #aaa;
+      border-radius: 30px;
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
     }
     .solicitar { background-color: #007bff; }
     .cancelar  { background-color: #dc3545; }
@@ -80,22 +79,22 @@
     .finalizar:hover  { background-color: #1c7c31; }
     .cerrar:hover     { background-color: #1d2124; }
     #formularioCalificacion, .calificacion-box {
-      width: 85%; 
-      max-width: 320px; 
-      margin: 20px auto; 
-      box-sizing: border-box; 
+      width: 85%;
+      max-width: 320px;
+      margin: 20px auto;
+      box-sizing: border-box;
     }
     select, textarea {
-      width: 100%; 
-      max-width: 100%; 
-      padding: 12px; 
-      margin-top: 10px; 
-      border-radius: 8px; 
-      border: 1px solid #555; 
-      font-size: 14px; 
-      background-color: #2a2a2a; 
-      color: #ffffff; 
-      box-sizing: border-box; 
+      width: 100%;
+      max-width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: 1px solid #555;
+      font-size: 14px;
+      background-color: #2a2a2a;
+      color: #ffffff;
+      box-sizing: border-box;
     }
   </style>
 </head>
@@ -111,7 +110,6 @@
   <p>ID de Usuario: {{ cliente.id }}</p>
   <div id="map"></div>
 
-  <!-- Botones existentes -->
   <button class="solicitar"   onclick="guardarUbicacionYEnviar()">🚗 Solicitar Servicio</button>
   <button class="cancelar"    onclick="cancelarSolicitud()">🗑 Cancelar Solicitud</button>
   <button class="finalizar"   onclick="mostrarFormularioCalificacion()">⭐ Finalizar Servicio / Calificar</button>
@@ -139,15 +137,11 @@
   <audio id="sonidoMensaje" src="/static/sounds/nuevo_mensaje.mp3"></audio>
 
   <script>
-    // ==========================================================
-    // VARIABLES GLOBALES Y SOCKET.IO
-    // ==========================================================
     const socket       = io();
     const clienteId    = {{ cliente.id }};
     const lavadorId    = {{ solicitud_activa.lavador_id if solicitud_activa else 'null' }};
     const tieneSolicitud = {{ 'true' if solicitud_activa else 'false' }};
 
-    // Mostrar notificación y comenzar movimiento sin recargar
     socket.on("notificacion_cliente", (data) => {
       if (data.cliente_id === clienteId && data.mensaje) {
         document.getElementById("mensajeLavador").style.display = "block";
@@ -161,14 +155,12 @@
         lavador_id: lavadorId
       });
     }
-    
     socket.on("iniciar_movimiento", (data) => {
       if (data.cliente_id === clienteId && data.lavador_id === lavadorId) {
         iniciarMovimientoCarritoCamioncito();
       }
     });
 
-    // Si no hay solicitud, iniciar “movimiento” estático
     setTimeout(() => {
       if (!tieneSolicitud) {
         iniciarMovimientoCarritoCamioncito();
@@ -178,9 +170,6 @@
     let map, lavadorMarker, clienteMarker;
     let rutaPolyline;
 
-    // ==========================================================
-    // INICIALIZAR MAPA DE GOOGLE
-    // ==========================================================
     function initMap() {
       map = new google.maps.Map(document.getElementById('map'), {
         center: { lat: 19.4326, lng: -99.1332 },
@@ -194,7 +183,6 @@
 
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(position => {
-          console.log("📍 Cliente ubicado en lat:", position.coords.latitude, "lng:", position.coords.longitude);
           const clientePos = {
             lat: position.coords.latitude,
             lng: position.coords.longitude
@@ -210,27 +198,19 @@
             }
           });
 
-          // ─────────────────────────────────────────────────────────────
-          // 1) GUARDAR UBICACIÓN INICIAL Y LUEGO PERMITIR BOTÓN “Solicitar”
-          // ─────────────────────────────────────────────────────────────
           navigator.geolocation.getCurrentPosition(pos => {
             const lat = pos.coords.latitude;
             const lng = pos.coords.longitude;
 
-            console.log("🛰️ Enviando ubicación antes de solicitar servicio...");
-
-            fetch('/actualizar_ubicacion', {
+            fetch('/actualizar_ubicacion_cliente', {
               method: 'POST',
               credentials: 'include',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                latitud: lat,
-                longitud: lng
-              })
+              body: JSON.stringify({ latitud: lat, longitud: lng })
             })
             .then(res => {
               if (!res.ok) {
-                console.error("❌ /actualizar_ubicacion devolvió código:", res.status);
+                console.error("❌ /actualizar_ubicacion_cliente devolvió:", res.status);
               }
               return res.json();
             })
@@ -243,22 +223,13 @@
             });
           });
 
-          // ─────────────────────────────────────────────────────────────
-          // 2) CADA 5s, OBTENER UBICACIÓN DEL LAVADOR (SI LA SOLICITUD ESTÁ ACEPTADA)
-          // ─────────────────────────────────────────────────────────────
           setInterval(() => {
             if (typeof lavadorId !== 'undefined' && lavadorId !== "none") {
-              console.log("🔄 Llamando a obtenerUbicacionLavador()...");
               obtenerUbicacionLavador();
-            } else {
-              console.log("⚠️ lavadorId inválido:", lavadorId);
             }
           }, 5000);
 
         }, error => {
-          console.warn("❌ Error al obtener ubicación:", error);
-          console.warn("📡 GPS no disponible. Usando ubicación de respaldo fija.");
-
           const clientePos = { lat: 43.0961502, lng: -75.2103744 };
           map.setCenter(clientePos);
           clienteMarker = new google.maps.Marker({
@@ -271,19 +242,15 @@
             }
           });
 
-          // Enviar ubicación de respaldo
-          fetch("/actualizar_ubicacion", {
+          fetch("/actualizar_ubicacion_cliente", {
             method: "POST",
             credentials: 'include',
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              latitud: clientePos.lat,
-              longitud: clientePos.lng
-            })
+            body: JSON.stringify({ latitud: clientePos.lat, longitud: clientePos.lng })
           })
           .then(res => {
             if (!res.ok) {
-              console.error("❌ /actualizar_ubicacion (respaldo) devolvió código:", res.status);
+              console.error("❌ /actualizar_ubicacion_cliente (respaldo) devolvió:", res.status);
             }
             return res.json();
           })
@@ -304,13 +271,9 @@
       } else {
         alert("🚫 Tu dispositivo no soporta geolocalización.");
       }
-    } // ← Fin de initMap()
+    }
 
-    // ==========================================================
-    // INICIA “MOVIMIENTO” DEL CARRITO (SI SOLICITUD ACEPTADA)
-    // ==========================================================
     function iniciarMovimientoCarritoCamioncito() {
-      console.log("✅ Movimiento iniciado desde el cliente");
       setInterval(() => {
         const solicitudAceptada = "{{ 'true' if solicitud_activa and solicitud_activa.estado == 'aceptado' else 'false' }}";
         if (solicitudAceptada === "true" && lavadorId !== "none") {
@@ -319,9 +282,6 @@
       }, 5000);
     }
 
-    // ==========================================================
-    // ACTUALIZA UBICACIÓN SIN SOLICITAR SERVICIO
-    // ==========================================================
     function actualizarUbicacion(lat, lng) {
       fetch('/actualizar_ubicacion_cliente', {
         method: 'POST',
@@ -355,9 +315,6 @@
       });
     }
 
-    // ==========================================================
-    // OBTIENE UBICACIÓN DEL LAVADOR EN TIEMPO REAL
-    // ==========================================================
     function obtenerUbicacionLavador() {
       if (lavadorId === "none") return;
 
@@ -371,7 +328,6 @@
           return response.json();
         })
         .then(data => {
-          console.log("📍 Respuesta de obtener_ubicacion_lavador:", data);
           if (data.lat && data.lng) {
             const lavadorPos = { lat: data.lat, lng: data.lng };
 
@@ -389,7 +345,6 @@
               lavadorMarker.setPosition(lavadorPos);
             }
 
-            // Dibujar línea de ruta
             if (clienteMarker && lavadorMarker) {
               if (rutaPolyline) rutaPolyline.setMap(null);
               rutaPolyline = new google.maps.Polyline({
@@ -408,11 +363,7 @@
         });
     }
 
-    // ==========================================================
-    // SOLICITAR SERVICIO (ENVÍA POST A /solicitar_servicio)
-    // ==========================================================
     function solicitarServicio() {
-      console.log("✉️ Ejecutando solicitarServicio()...");
       fetch("/solicitar_servicio", {
         method: "POST",
         credentials: "include",
@@ -420,16 +371,15 @@
       })
       .then(response => {
         if (!response.ok) {
-          console.error("❌ /solicitar_servicio devolvió código:", response.status);
+          console.error("❌ /solicitar_servicio devolvió:", response.status);
         }
         return response.json();
       })
       .then(data => {
-        console.log("📨 Respuesta de solicitar_servicio:", data);
         if (data.success) {
           alert("🚗 Solicitud enviada correctamente.");
         } else {
-          alert("❌ No se pudo enviar la solicitud.");
+          alert("❌ No se pudo enviar la solicitud: " + (data.error || "Error desconocido."));
         }
       })
       .catch(error => {
@@ -438,17 +388,12 @@
       });
     }
 
-    // ==========================================================
-    // GUARDAR UBICACIÓN Y LUEGO LLAMAR A solicitarServicio()
-    // ==========================================================
     function guardarUbicacionYEnviar() {
       navigator.geolocation.getCurrentPosition(pos => {
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
 
-        console.log("🛰️ Enviando ubicación antes de llamar a solicitarServicio()...");
-
-        fetch('/actualizar_ubicacion', {
+        fetch('/actualizar_ubicacion_cliente', {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
@@ -456,12 +401,11 @@
         })
         .then(res => {
           if (!res.ok) {
-            console.error("❌ /actualizar_ubicacion (guardarUbicacionYEnviar) devolvió código:", res.status);
+            console.error("❌ /actualizar_ubicacion_cliente (guardarUbicacionYEnviar) devolvió:", res.status);
           }
           return res.json();
         })
         .then(data => {
-          console.log("✅ Ubicación actualizada (guardarUbicacionYEnviar):", data);
           solicitarServicio();
         })
         .catch(err => {
@@ -471,11 +415,7 @@
       });
     }
 
-    // ==========================================================
-    // CANCELAR SOLICITUD
-    // ==========================================================
     function cancelarSolicitud() {
-      console.log("🧪 Ejecutando cancelarSolicitud()...");
       fetch("/cancelar_solicitud", {
         method: "POST",
         credentials: "include"
@@ -487,7 +427,6 @@
           return response.text();
         })
         .then(texto => {
-          console.log("⏹️ Respuesta de cancelar_solicitud:", texto);
           if (texto) {
             alert("🛑 Solicitud cancelada.");
             location.reload();
@@ -499,30 +438,19 @@
         });
     }
 
-    // ==========================================================
-    // MOSTRAR FORMULARIO DE CALIFICACIÓN
-    // ==========================================================
     function mostrarFormularioCalificacion() {
       document.getElementById("formularioCalificacion").style.display = "block";
     }
 
-    // ==========================================================
-    // ENVIAR CALIFICACIÓN AL SERVIDOR
-    // ==========================================================
     function enviarCalificacion() {
       const calificacion = document.getElementById("calificacion").value;
       const comentario  = document.getElementById("comentario").value;
-
-      console.log("✏️ Enviando calificación:", calificacion, comentario);
 
       fetch("/finalizar_servicio", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          calificacion: calificacion,
-          comentario: comentario
-        })
+        body: JSON.stringify({ calificacion: calificacion, comentario: comentario })
       })
       .then(res => {
         if (!res.ok) {
@@ -531,7 +459,6 @@
         return res.json();
       })
       .then(data => {
-        console.log("📝 Respuesta de finalizar_servicio:", data);
         alert(data.mensaje);
         if (data.mensaje.includes("calificado")) {
           window.location.href = "/cliente_dashboard";
@@ -543,18 +470,12 @@
       });
     }
 
-    // ==========================================================
-    // CERRAR SESIÓN (redirigir a selección de rol)
-    // ==========================================================
     function cerrarSesion() {
       window.location.href = "/seleccion_rol";
     }
 
     document.addEventListener('DOMContentLoaded', initMap);
 
-    // ==========================================================
-    // NOTIFICACIÓN DE NUEVO MENSAJE
-    // ==========================================================
     socket.emit("unirse_sala_mensajes", { user_id: clienteId });
     socket.on("nuevo_mensaje_directo", function(data) {
       if (data.destinatario_id === clienteId) {
@@ -576,9 +497,6 @@
       if (sonido) sonido.play().catch(() => {});
     }, { once: true });
 
-    // ==========================================================
-    // COMPROBAR MENSAJES NUEVOS CADA 5 SEGUNDOS
-    // ==========================================================
     setInterval(() => {
       fetch("/verificar_mensajes_nuevos", { credentials: 'include' })
         .then(res => {
@@ -588,15 +506,13 @@
           return res.json();
         })
         .then(data => {
-          if (data.mensajes_nuevos) {
-            if (!document.getElementById("burbujaChat")) {
-              const burbuja = document.createElement("span");
-              burbuja.textContent = "🔴";
-              burbuja.id = "burbujaChat";
-              burbuja.style.marginLeft = "5px";
-              const boton = document.getElementById("botonChat");
-              if (boton) boton.appendChild(burbuja);
-            }
+          if (data.mensajes_nuevos && !document.getElementById("burbujaChat")) {
+            const burbuja = document.createElement("span");
+            burbuja.textContent = "🔴";
+            burbuja.id = "burbujaChat";
+            burbuja.style.marginLeft = "5px";
+            const boton = document.getElementById("botonChat");
+            if (boton) boton.appendChild(burbuja);
           }
         })
         .catch(err => {
