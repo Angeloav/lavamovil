@@ -272,7 +272,7 @@ function actualizarUbicacion(lat, lng) {
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ lat: lat, lng: lng })
+    body: JSON.stringify({ latitud: lat, longitud: lng })  // 👈 CAMBIADO AQUÍ
   })
   .then(res => res.json())
   .then(data => {
