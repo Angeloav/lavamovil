@@ -365,6 +365,7 @@ def actualizar_ubicacion_cliente():
 
 @app.route('/solicitar_servicio', methods=['POST'])
 def solicitar_servicio():
+    print("🧪 session['cliente_id'] =", session.get("cliente_id"))
     if 'usuario_id' not in session:
         return jsonify({'error': 'No se ha detectado el ID del usuario.'}), 400
 
