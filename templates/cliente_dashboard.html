@@ -280,7 +280,7 @@ function solicitarServicio() {
   })
   .then(response => response.json())
   .then(data => {
-    if (data.success) {
+    if (data.success === "Solicitud enviada correctamente.")
       alert("🚗 Solicitud enviada correctamente.");
     } else {
       alert("❌ No se pudo enviar la solicitud.");
