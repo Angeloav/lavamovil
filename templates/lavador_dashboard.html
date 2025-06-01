@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -116,7 +117,7 @@ function initMap() {
   });
 
   const permisoUbicacion = confirm("🚗 LavaMovil necesita acceso a tu ubicación para encontrar al cliente. ¿Deseas permitirlo?");
-  if (!permisoUbicacion) return;
+    if (!permisoUbicacion) return;
 
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(pos => {

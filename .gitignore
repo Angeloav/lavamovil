@@ -4,3 +4,7 @@ respaldos/
 
 # ⚠️ IMPORTANTE: No ignorar la base de datos
 # lavamovil.db
+.idea/
+AndroidStudioProjects/
+.gradle/
+*.db
