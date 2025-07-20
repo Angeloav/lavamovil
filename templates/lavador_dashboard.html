@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -55,6 +54,11 @@
 
 <h1>Bienvenido Lavador {{ lavador.nombre }} {{ lavador.apellido }}</h1>
 <p>ID de Usuario: {{ lavador.id }}</p>
+{% if lavador.fecha_expiracion %}
+  <p style="color: lime; font-weight: bold;">
+    🟢 Suscripción activa hasta: {{ lavador.fecha_expiracion.strftime('%d de %B de %Y') }}
+  </p>
+{% endif %}
 <div id="estado">Estado: <span id="estadoServicio">{{ lavador.estado.capitalize() }}</span></div>
 
 <div id="notificacion">¡Nueva solicitud recibida!</div>
@@ -63,7 +67,9 @@
 <button class="activo" onclick="cambiarEstado('activo')">🔔 Activar</button>
 <button class="inactivo" onclick="cambiarEstado('inactivo')">🔕 Desactivar</button>
 <button class="vercal" onclick="verCalificaciones()">⭐ Ver Calificaciones</button>
-<button class="cerrar" onclick="cerrarSesion()">⛔ Cerrar Sesión</button>
+{% if lavador.fecha_expiracion and lavador.fecha_expiracion < now() %}
+  <button class="cerrar" onclick="cerrarSesion()">⛔ Cerrar Sesión</button>
+{% endif %}
 
 <form action="/chat" method="get">
   <input type="hidden" name="rol" value="lavador">

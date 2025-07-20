@@ -329,22 +329,21 @@
       fetch("/cancelar_solicitud", {
         method: "POST",
         credentials: "include"
-      })
-      .then(response => {
-        if (!response.ok) console.error("❌ /cancelar_solicitud devolvió:", response.status);
-        return response.text();
-      })
-      .then(texto => {
-        if (texto) {
-          alert("🛑 Solicitud cancelada.");
-          location.reload();
-        }
-      })
-      .catch(err => {
-        console.error("❌ Error en cancelarSolicitud():", err);
-        alert("❌ Error al cancelar la solicitud.");
-      });
-    }
+     })
+     .then(res => res.json())
+     .then(data => {
+       if (data.redirect) {
+         window.location.href = data.redirect;  // ⬅ redirige a /solicitud_cancelada
+       } else {
+         alert(data.message || "🛑 Solicitud cancelada.");
+         location.reload(); // Solo si no hay redirección
+       }
+    })
+    .catch(err => {
+      console.error("❌ Error en cancelarSolicitud():", err);
+      alert("❌ Error al cancelar la solicitud.");
+    });
+  }
 
     function mostrarFormularioCalificacion() {
       document.getElementById("formularioCalificacion").style.display = "block";

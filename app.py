@@ -5,6 +5,7 @@ from flask_session import Session
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
+from flask import render_template
 import os
 
 # Configuración inicial de la app
@@ -70,6 +71,20 @@ class Calificacion(db.Model):
     calificacion = db.Column(db.String(50))
     comentario = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+@app.before_request
+def verificar_acceso_lavador():
+    if request.endpoint in ['static', 'logout', 'admin_login', 'admin_logout']:
+        return  # ⚠️ Evita interferir con rutas sensibles
+
+    lavador_id = session.get('lavador_id')
+    if lavador_id:
+        lavador = Usuario.query.get(lavador_id)
+        if lavador and lavador.rol == 'lavador':
+            ahora = datetime.utcnow()
+            if lavador.suscrito and lavador.estado == 'activo' and lavador.fecha_expiracion and lavador.fecha_expiracion > ahora:
+                if request.endpoint not in ['lavador_dashboard', 'subir_bauche', 'actualizar_ubicacion', 'chat']:
+                    return redirect(url_for('lavador_dashboard'))
 
 # Rutas principales
 @app.route('/')
@@ -212,7 +227,9 @@ def aprobar_bauche():
 
     if lavador:
         lavador.estado = 'activo'
-        lavador.suscrito = True
+        lavador.suscrito = True 
+        lavador.fecha_aprobacion = datetime.utcnow()
+        lavador.fecha_expiracion = datetime.utcnow() + timedelta(days=30)  # ⏳ 30 días de suscripción
         db.session.commit()
 
         print(f"✅ Lavador aprobado: {lavador.nombre} (ID: {lavador.id})")
@@ -240,7 +257,7 @@ def lavador_dashboard():
     solicitud_activa = Solicitud.query.filter_by(lavador_id=lavador.id, estado='aceptado').first()
     cliente = Usuario.query.get(solicitud_activa.cliente_id) if solicitud_activa else None
 
-    return render_template("lavador_dashboard.html", lavador=lavador, cliente=cliente, solicitud_activa=solicitud_activa)
+    return render_template("lavador_dashboard.html", lavador=lavador, cliente=cliente, solicitud_activa=solicitud_activa, now=datetime.utcnow)
 
 @app.route('/rechazar_bauche', methods=['POST'])
 def rechazar_bauche():
@@ -275,8 +292,8 @@ def admin_dashboard():
 
     solicitudes = Solicitud.query.all()
     for s in solicitudes:
-        cliente = Usuario.query.get(s.cliente_id)
-        lavador = Usuario.query.get(s.lavador_id)
+        cliente = db.session.get(Usuario, s.cliente_id)
+        lavador = db.session.get(Usuario, s.lavador_id)
         s.cliente_nombre = cliente.nombre if cliente else '---'
         s.cliente_apellido = cliente.apellido if cliente else ''
         s.lavador_nombre = lavador.nombre if lavador else '---'
@@ -616,6 +633,10 @@ def admin_logout():
     session.pop('admin', None)
     return render_template('admin_logout.html')
 
+@app.route('/solicitud_cancelada')
+def solicitud_cancelada():
+    return render_template('cancelada.html')
+
 @app.route('/cancelar_solicitud', methods=["POST"])
 def cancelar_solicitud():
     cliente_id = session.get("cliente_id")
@@ -640,7 +661,12 @@ def cancelar_solicitud():
                 'mensaje': f'El cliente {cliente.nombre} canceló la solicitud.'
             })
 
-        return jsonify({'message': 'Solicitud cancelada correctamente.'})
+        # ✅ Redirigir a la página elegante
+        return jsonify({
+            'message': 'Solicitud cancelada correctamente.',
+            'redirect': '/solicitud_cancelada'
+        })
+
     else:
         return jsonify({'message': 'No se encontró una solicitud activa para cancelar.'}), 404
 
