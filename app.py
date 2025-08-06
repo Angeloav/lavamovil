@@ -5,7 +5,6 @@ from flask_session import Session
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
-from flask import render_template
 import os
 
 # Configuración inicial de la app
@@ -72,20 +71,6 @@ class Calificacion(db.Model):
     comentario = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
-@app.before_request
-def verificar_acceso_lavador():
-    if request.endpoint in ['static', 'logout', 'admin_login', 'admin_logout']:
-        return  # ⚠️ Evita interferir con rutas sensibles
-
-    lavador_id = session.get('lavador_id')
-    if lavador_id:
-        lavador = Usuario.query.get(lavador_id)
-        if lavador and lavador.rol == 'lavador':
-            ahora = datetime.utcnow()
-            if lavador.suscrito and lavador.estado == 'activo' and lavador.fecha_expiracion and lavador.fecha_expiracion > ahora:
-                if request.endpoint not in ['lavador_dashboard', 'subir_bauche', 'actualizar_ubicacion', 'chat']:
-                    return redirect(url_for('lavador_dashboard'))
-
 # Rutas principales
 @app.route('/')
 def index():
@@ -124,7 +109,7 @@ def cliente_dashboard():
         print("❌ cliente_id no está en sesión")
         return redirect(url_for('registro_cliente'))
 
-    cliente = Usuario.query.get(cliente_id)
+    cliente = db.session.get(Usuario, cliente_id)
     if not cliente:
         print("❌ Cliente no encontrado en la base de datos")
         return redirect(url_for('registro_cliente'))
@@ -227,9 +212,7 @@ def aprobar_bauche():
 
     if lavador:
         lavador.estado = 'activo'
-        lavador.suscrito = True 
-        lavador.fecha_aprobacion = datetime.utcnow()
-        lavador.fecha_expiracion = datetime.utcnow() + timedelta(days=30)  # ⏳ 30 días de suscripción
+        lavador.suscrito = True
         db.session.commit()
 
         print(f"✅ Lavador aprobado: {lavador.nombre} (ID: {lavador.id})")
@@ -250,14 +233,14 @@ def lavador_dashboard():
     if not lavador_id:
         return redirect(url_for('registro_lavador'))
 
-    lavador = Usuario.query.get(lavador_id)
+    lavador = db.session.get(Usuario, lavador_id)
     if not lavador:
         return redirect(url_for('registro_lavador'))
 
     solicitud_activa = Solicitud.query.filter_by(lavador_id=lavador.id, estado='aceptado').first()
     cliente = Usuario.query.get(solicitud_activa.cliente_id) if solicitud_activa else None
 
-    return render_template("lavador_dashboard.html", lavador=lavador, cliente=cliente, solicitud_activa=solicitud_activa, now=datetime.utcnow)
+    return render_template("lavador_dashboard.html", lavador=lavador, cliente=cliente, solicitud_activa=solicitud_activa)
 
 @app.route('/rechazar_bauche', methods=['POST'])
 def rechazar_bauche():
@@ -292,8 +275,8 @@ def admin_dashboard():
 
     solicitudes = Solicitud.query.all()
     for s in solicitudes:
-        cliente = db.session.get(Usuario, s.cliente_id)
-        lavador = db.session.get(Usuario, s.lavador_id)
+        cliente = Usuario.query.get(s.cliente_id)
+        lavador = Usuario.query.get(s.lavador_id)
         s.cliente_nombre = cliente.nombre if cliente else '---'
         s.cliente_apellido = cliente.apellido if cliente else ''
         s.lavador_nombre = lavador.nombre if lavador else '---'
@@ -320,18 +303,14 @@ def logout():
     session.pop('admin', None)
     return redirect('/')
 
-@app.route('/actualizar_ubicacion', methods=['POST']) 
+@app.route('/actualizar_ubicacion', methods=['POST'])
 def actualizar_ubicacion():
     lavador_id = session.get('lavador_id')
-    print("🧠 lavador_id en sesión:", lavador_id)  # Para verificar la sesión
-
     if not lavador_id:
         print("🚨 Error: No se detecta lavador en sesión.")
         return jsonify({'error': 'No autorizado'}), 401
 
     data = request.get_json()
-    print("📩 JSON recibido:", data)  # Para ver si llegan latitud y longitud
-
     if not data:
         print("🚨 Error: No se recibieron datos de ubicación.")
         return jsonify({'error': 'No se proporcionaron datos'}), 400
@@ -382,11 +361,10 @@ def actualizar_ubicacion_cliente():
 
 @app.route('/solicitar_servicio', methods=['POST'])
 def solicitar_servicio():
-    print("🧪 session['cliente_id'] =", session.get("cliente_id"))
-    if 'usuario_id' not in session:
-        return jsonify({'error': 'No se ha detectado el ID del usuario.'}), 400
+    cliente_id = session.get("cliente_id")
+    if not cliente_id:
+        return jsonify({'error': 'No se ha detectado el ID del cliente.'}), 400
 
-    cliente_id = session.get("cliente_id") or session.get("usuario_id")
     print(f'🧩 Cliente solicitando servicio, ID: {cliente_id}')
 
     cliente = Usuario.query.get(cliente_id)
@@ -396,7 +374,6 @@ def solicitar_servicio():
     # ⚠️ Verificar ubicación válida
     if not cliente.latitud or not cliente.longitud:
         print("❌ Cliente sin ubicación registrada.")
-        print(f"🔍 Validando ubicación - lat: {cliente.latitud}, lng: {cliente.longitud}")
         return jsonify({'error': 'Ubicación del cliente no disponible.'}), 400
 
     print(f"🌍 Ubicación del cliente: {cliente.latitud}, {cliente.longitud}")
@@ -410,19 +387,32 @@ def solicitar_servicio():
     db.session.add(nueva_solicitud)
     db.session.commit()
 
-    socketio.emit('nueva_solicitud', {
-        'solicitud_id': nueva_solicitud.id,
-        'cliente_id': cliente.id,
-        'nombre': cliente.nombre,
-        'apellido': cliente.apellido,
-        'telefono': cliente.telefono,
-        'latitud': cliente.latitud,
-        'longitud': cliente.longitud
-    })
+    # ✅ Buscar lavador por sesión activa
+    lavador_id = session.get('lavador_id')
+    lavador = Usuario.query.get(lavador_id)
 
-    print(f'✅ Solicitud creada con ID {nueva_solicitud.id} y notificación enviada al lavador.')
+    if lavador:
+        print(f"🚀 Enviando solicitud al lavador ID {lavador.id}")
+        socketio.emit('nueva_solicitud', {
+            'solicitud_id': nueva_solicitud.id,
+            'cliente_id': cliente.id,
+            'lavador_id': lavador.id,
+            'nombre': cliente.nombre,
+            'apellido': cliente.apellido,
+            'telefono': cliente.telefono,
+            'latitud': cliente.latitud,
+            'longitud': cliente.longitud
+        }, room=f"lavador_{lavador.id}")
 
-    return jsonify({'success': 'Solicitud enviada correctamente.'})
+        print(f'✅ Solicitud creada con ID {nueva_solicitud.id} y enviada al lavador.')
+        return jsonify({'success': 'Solicitud enviada correctamente.'})
+
+    else:
+        print("❌ No se encontró lavador logueado.")
+        return jsonify({
+            'success': 'Solicitud enviada correctamente.',
+            'solicitud_id': nueva_solicitud.id
+        })
 
 @app.route('/solicitudes_activas')
 def solicitudes_activas():
@@ -569,18 +559,21 @@ def obtener_ubicacion_lavador():
 @app.route('/obtener_ubicacion_cliente')
 def obtener_ubicacion_cliente():
     lavador_id = session.get('lavador_id')
-
-    print("🧪 lavador_id en sesión:", lavador_id)
+    if not lavador_id:
+        print("❌ El usuario no es un lavador")
+        return "Acceso denegado", 403
 
     solicitud = Solicitud.query.filter_by(lavador_id=lavador_id, estado='aceptado').first()
     if not solicitud:
+        print("❌ No hay solicitud aceptada para este lavador")
         return jsonify({"error": "No hay solicitud activa"}), 404
 
     cliente = Usuario.query.get(solicitud.cliente_id)
     if cliente and cliente.latitud and cliente.longitud:
         print(f"📍 Cliente localizado en lat: {cliente.latitud}, lng: {cliente.longitud}")
         return jsonify({"lat": cliente.latitud, "lng": cliente.longitud})
-
+    
+    print("❌ No se pudo obtener la ubicación del cliente")
     return jsonify({"error": "Ubicación no disponible"}), 404
 
 @app.route('/finalizar_servicio', methods=['POST'])
@@ -633,10 +626,6 @@ def admin_logout():
     session.pop('admin', None)
     return render_template('admin_logout.html')
 
-@app.route('/solicitud_cancelada')
-def solicitud_cancelada():
-    return render_template('cancelada.html')
-
 @app.route('/cancelar_solicitud', methods=["POST"])
 def cancelar_solicitud():
     cliente_id = session.get("cliente_id")
@@ -661,12 +650,7 @@ def cancelar_solicitud():
                 'mensaje': f'El cliente {cliente.nombre} canceló la solicitud.'
             })
 
-        # ✅ Redirigir a la página elegante
-        return jsonify({
-            'message': 'Solicitud cancelada correctamente.',
-            'redirect': '/solicitud_cancelada'
-        })
-
+        return jsonify({'message': 'Solicitud cancelada correctamente.'})
     else:
         return jsonify({'message': 'No se encontró una solicitud activa para cancelar.'}), 404
 
@@ -691,10 +675,10 @@ def obtener_ubicacion_cliente_directo():
 
 @socketio.on("unirse_sala_privada")
 def manejar_union_sala(data):
-    cliente_id = int(data["cliente_id"])
-    lavador_id = int(data["lavador_id"])
-    sala = f"chat_{min(cliente_id, lavador_id)}_{max(cliente_id, lavador_id)}"
-    join_room(sala)
+    lavador_id = data.get("lavador_id")
+    if lavador_id:
+        join_room(f"lavador_{lavador_id}")
+        print(f"🔒 Lavador {lavador_id} unido a sala privada")
 
 def emitir_mensaje_directo(destinatario_id, mensaje):
     socketio.emit("nuevo_mensaje_directo", {
@@ -756,6 +740,73 @@ def handle_connect():
     if user_id:
         join_room(user_id)
 
+@socketio.on("solicitud_cliente")
+def manejar_solicitud_cliente(data):
+    print("📥 Solicitud recibida del cliente:", data)
+
+    cliente_id = data.get("cliente_id")
+    latitud = data.get("latitud")
+    longitud = data.get("longitud")
+
+    if not cliente_id or not latitud or not longitud:
+        print("❌ Datos incompletos para crear la solicitud")
+        return
+
+    cliente = Usuario.query.get(cliente_id)
+    if not cliente:
+        print("❌ Cliente no encontrado en la base de datos")
+        return
+
+    solicitud = Solicitud(
+        cliente_id=cliente_id,
+        latitud=latitud,
+        longitud=longitud,
+        estado="pendiente"
+    )
+    db.session.add(solicitud)
+    db.session.commit()
+
+    print("✅ Solicitud guardada con ID:", solicitud.id)
+
+    # Emitir a todos los lavadores activos
+    datos_emitidos = {
+        "solicitud_id": solicitud.id,
+        "cliente_id": cliente.id,
+        "nombre": cliente.nombre,
+        "apellido": cliente.apellido,
+        "telefono": cliente.telefono,
+        "latitud": latitud,
+        "longitud": longitud,
+    }
+
+    lavador_id = data.get("lavador_id")  # ✅ Asegúrate de obtenerlo desde el front
+
+    if not lavador_id:
+        print("❌ lavador_id faltante en data")
+        return
+
+    socketio.emit("nueva_solicitud", datos_emitidos, room=f"lavador_{lavador_id}")
+    print(f"📡 Solicitud emitida a lavador_{lavador_id}:", datos_emitidos)
+
+@socketio.on("actualizar_ubicacion_cliente")
+def actualizar_ubicacion_cliente(data):
+    cliente_id = data.get("cliente_id")
+    lat = data.get("latitud")
+    lng = data.get("longitud")
+
+    if cliente_id and lat and lng:
+        solicitud = Solicitud.query.filter_by(cliente_id=cliente_id, estado="aceptado").first()
+        if solicitud:
+            solicitud.latitud = lat
+            solicitud.longitud = lng
+            db.session.commit()
+            print(f"📍 Ubicación actualizada para cliente {cliente_id}: {lat}, {lng}")
+            # También podemos emitir al lavador para que se actualice el marcador del cliente
+            socketio.emit("actualizar_ubicacion_cliente", {
+                "latitud": lat,
+                "longitud": lng
+            }, room=f"lavador_{solicitud.lavador_id}")
+
 @app.route('/solicitud_activa')
 def obtener_solicitud_activa():
     lavador_id = request.args.get('lavador_id') or session.get('usuario_id')
@@ -801,7 +852,7 @@ def chat():
     rol = request.args.get('rol')
 
     if rol == 'cliente':
-        cliente_id = session.get('usuario_id')
+        cliente_id = session.get('cliente_id')
         if cliente_id:
             cliente = Usuario.query.get(cliente_id)
             solicitud = Solicitud.query.filter_by(cliente_id=cliente.id, estado='aceptado').first()
@@ -918,8 +969,30 @@ def solicitudes_pendientes():
         })
     return jsonify(resultado)
 
+@app.route('/actualizar_ubicacion_lavador')
+def actualizar_ubicacion_lavador():
+    user_id = session.get("lavador_id")
+    if not user_id:
+        return jsonify({"error": "Lavador no autenticado"}), 401
+
+    lat = request.args.get("lat", type=float)
+    lng = request.args.get("lng", type=float)
+
+    if lat is None or lng is None:
+        return jsonify({"error": "Coordenadas inválidas"}), 400
+
+    lavador = Usuario.query.get(user_id)
+    if lavador:
+        lavador.latitud = lat
+        lavador.longitud = lng
+        db.session.commit()
+        return jsonify({"success": True})
+
+    return jsonify({"error": "Lavador no encontrado"}), 404
+
 if __name__ == '__main__':
     with app.app_context():
         if not os.path.exists('lavamovil.db'):
             db.create_all()
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+
