@@ -8,7 +8,7 @@
   <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
   
   <title>Cliente - LavaMovil</title>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBmVCNKb_sjx-vE5b1YoJpPUgm8Ub09ElE"></script>
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBmVCNKb_sjx-vE5b1YoJpPUgm8Ub09ElE&callback=initMap"></script>
   <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
   <style>
     body {
@@ -201,6 +201,7 @@
           guardarUbicacionAlCargar(clientePos.lat, clientePos.lng);
           ubicacionInicialGuardada = true;
         }
+
       }, error => {
         // Si falla geolocalización, usar coordenadas fijas
         const clientePos = { lat: 43.0961502, lng: -75.2103744 };
@@ -232,6 +233,13 @@
       }, 5000);
     }
 
+    window.initMap = initMap; // 👉 Esto hace visible la función para Google Maps
+
+    // Y si quieres que el carrito se mueva desde el inicio:
+    if (solicitudAceptada) {
+    iniciarMovimientoCarritoCamioncito();
+    }
+
     function iniciarMovimientoCarritoCamioncito() {
       // Llamada inmediata para no esperar 5 segundos
       obtenerUbicacionLavador();
@@ -245,6 +253,8 @@
       })
       .then(response => response.json())
       .then(data => {
+        console.log("📡 Datos recibidos del lavador:", data);  // 🔍 Registro agregado
+
         if (data.lat && data.lng) {
           const lavadorPos = { lat: data.lat, lng: data.lng };
           if (!lavadorMarker) {
@@ -281,6 +291,10 @@
       navigator.geolocation.getCurrentPosition(pos => {
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
+
+        latitudCliente = lat;
+        longitudCliente = lng;
+
         fetch('/actualizar_ubicacion_cliente', {
           method: 'POST',
           credentials: 'include',
@@ -292,29 +306,32 @@
           return res.json();
         })
         .then(data => {
-          solicitarServicio();
+          solicitarServicio();  // Llamamos a la función que hace el emit y guarda el ID
         })
         .catch(err => {
           console.error("❌ Error en guardarUbicacionYEnviar():", err);
           alert("Error al actualizar la ubicación.");
         });
+      }, err => {
+        console.error("❌ Error en geolocalización:", err);
+        alert("No se pudo obtener tu ubicación.");
       });
     }
 
-    function solicitarServicio() {
+    function solicitarServicio(latitudCliente, longitudCliente) {
       fetch("/solicitar_servicio", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" }
       })
       .then(response => {
-        if (!response.ok) console.error("❌ /solicitar_servicio devolvió:", response.status);
+        if (!response.ok) throw new Error("Respuesta no OK del servidor");
         return response.json();
       })
       .then(data => {
         if (data.success) {
           alert("🚗 Solicitud enviada correctamente.");
-          // El servidor, al aceptar, enviará la notificación vía socket
+          console.log("📡 Solicitud creada y enviada al lavador (vía servidor). ID:", data.solicitud_id);
         } else {
           alert("❌ No se pudo enviar la solicitud: " + (data.error || "Error desconocido."));
         }
@@ -377,17 +394,7 @@
     function cerrarSesion() {
       window.location.href = "/seleccion_rol";
     }
-
-    // ==================== FIN FUNCIONES EXISTENTES ====================
-
-    document.addEventListener('DOMContentLoaded', () => {
-      initMap();
-      // Si ya había solicitud, arranca movimiento inmediato
-      if (solicitudAceptada) {
-        iniciarMovimientoCarritoCamioncito();
-      }
-    });
-
+   
     // ==================== NOTIFICACIONES DE CHAT (sin modificar) ====================
     socket.emit("unirse_sala_mensajes", { user_id: clienteId });
     socket.on("nuevo_mensaje_directo", function(data) {
@@ -430,69 +437,68 @@
     }, 5000);
   </script>
 
-  <!-- ==================== SCRIPT SECUNDARIO: SOLAMENTE GEOLOCALIZACIÓN ==================== -->
-  <script>
-    navigator.geolocation.getCurrentPosition(position => {
-      const clientePos = {
-        lat: position.coords.latitude,
-        lng: position.coords.longitude
-      };
-      map.setCenter(clientePos);
-      clienteMarker = new google.maps.Marker({
-        position: clientePos,
-        map: map,
-        title: "Tu ubicación",
-        icon: {
-          url: "/static/icons/carrito_icono.png",
-          scaledSize: new google.maps.Size(50, 50)
-        }
+  
+<!-- ==================== SCRIPT SECUNDARIO: GEOLOCALIZACIÓN CÍCLICA ==================== -->
+<script>
+  function guardarUbicacionAlCargar(lat, lng) {
+    fetch('/actualizar_ubicacion_cliente', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ latitud: lat, longitud: lng })
+    })
+    .then(res => {
+      if (!res.ok) console.error("❌ /actualizar_ubicacion_cliente devolvió:", res.status);
+      return res.json();
+    })
+    .then(data => {
+      console.log("📍 Ubicación inicial guardada:", data);
+    })
+    .catch(err => console.error("❌ Error al guardar ubicación inicial:", err));
+  }
+
+  function enviarUbicacionCliente() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(pos => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+
+        socket.emit("actualizar_ubicacion_cliente", {
+          cliente_id: {{ cliente.id }},
+          latitud: lat,
+          longitud: lng
+        });
+
+        console.log("📤 Cliente envió ubicación:", lat, lng);
       });
-
-      if (!ubicacionInicialGuardada) {
-        guardarUbicacionAlCargar(clientePos.lat, clientePos.lng);
-        ubicacionInicialGuardada = true;
-      }
-
-    }, error => {
-      // Si falla geolocalización, usar coordenadas fijas
-      const clientePos = { lat: 43.0961502, lng: -75.2103744 };
-      map.setCenter(clientePos);
-      clienteMarker = new google.maps.Marker({
-        position: clientePos,
-        map: map,
-        title: "Ubicación estimada",
-        icon: {
-          url: "/static/icons/carrito_icono.png",
-          scaledSize: new google.maps.Size(50, 50)
-        }
-      });
-      if (!ubicacionInicialGuardada) {
-        guardarUbicacionAlCargar(clientePos.lat, clientePos.lng);
-        ubicacionInicialGuardada = true;
-      }
-    }, {
-      enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 0
-    });
-
-    // Guarda la ubicación inicial sin requerir clic
-    function guardarUbicacionAlCargar(lat, lng) {
-      fetch('/actualizar_ubicacion_cliente', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ latitud: lat, longitud: lng })
-      })
-      .then(res => {
-        if (!res.ok) console.error("❌ /actualizar_ubicacion_cliente devolvió:", res.status);
-        return res.json();
-      })
-      .then(data => {
-        // Ubicación inicial guardada
-      })
-      .catch(err => console.error("❌ Error al guardar ubicación inicial:", err));
     }
-  </script>
+  }
+
+  setInterval(enviarUbicacionCliente, 5000);
+
+  // Definir los datos del cliente en JavaScript de forma segura
+ const clienteInfo = {
+    id: {{ cliente.id }},
+    nombre: "{{ cliente.nombre }}",
+    apellido: "{{ cliente.apellido }}",
+    telefono: "{{ cliente.telefono }}"
+  };
+
+<script>
+// Registra globalmente la función para que el mapa cargue bien
+window.initMap = initMap;
+</script>
+
+<script async defer
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBmVCNKb_sjx-vE5b1YoJpPUgm8Ub09ElE&callback=initMap">
+
+if (lavadorId && lavadorId !== "none") {
+  setInterval(() => {
+    obtenerUbicacionLavador();
+  }, 5000);
+}
+
+</script>
+
 </body>
 </html>
