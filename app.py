@@ -1001,6 +1001,13 @@ def debug_emit(lavador_id):
     socketio.emit("nueva_solicitud", payload, room=f"lavador_{lavador_id}")
     return {"ok": True, "room": f"lavador_{lavador_id}"}
     
+ @app.after_request
+def add_no_cache_headers(resp):
+    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0, private"]
+    resp.headers["Pragma"] = "no-cache"
+    resp.headers["Expires"] = "0"
+    return resp
+   
 if __name__ == '__main__':
     with app.app_context():
         if not os.path.exists('lavamovil.db'):
