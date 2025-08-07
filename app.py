@@ -990,10 +990,6 @@ def actualizar_ubicacion_lavador():
 
     return jsonify({"error": "Lavador no encontrado"}), 404
     
-@app.route("/lavador_test")
-def lavador_test():
-    return render_template("lavador_test.html")
-
 if __name__ == '__main__':
     with app.app_context():
         if not os.path.exists('lavamovil.db'):
