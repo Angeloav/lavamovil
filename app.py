@@ -1007,7 +1007,13 @@ def add_no_cache_headers(resp):
     resp.headers["Pragma"] = "no-cache"
     resp.headers["Expires"] = "0"
     return resp
-   
+    
+ APP_VERSION = "2025-08-06-02"  # <-- súbele 1 si vuelves a desplegar
+
+@app.get("/__version")
+def version():
+    return {"version": APP_VERSION}
+  
 if __name__ == '__main__':
     with app.app_context():
         if not os.path.exists('lavamovil.db'):
