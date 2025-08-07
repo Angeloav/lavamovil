@@ -673,9 +673,6 @@ def obtener_ubicacion_cliente_directo():
     
     return jsonify({'error': 'Cliente no encontrado'}), 404
     
-from flask import request
-from flask_socketio import join_room, emit
-
 @socketio.on("unirse_sala_privada")
 def manejar_union_sala(data):
     lavador_id = data.get("lavador_id")
