@@ -672,6 +672,9 @@ def obtener_ubicacion_cliente_directo():
         return jsonify({'lat': cliente.latitud, 'lng': cliente.longitud})
     
     return jsonify({'error': 'Cliente no encontrado'}), 404
+    
+from flask import request
+from flask_socketio import join_room, emit
 
 @socketio.on("unirse_sala_privada")
 def manejar_union_sala(data):
@@ -989,6 +992,17 @@ def actualizar_ubicacion_lavador():
         return jsonify({"success": True})
 
     return jsonify({"error": "Lavador no encontrado"}), 404
+@app.get("/debug_emit/<int:lavador_id>")
+def debug_emit(lavador_id):
+    payload = {
+        "lavador_id": lavador_id,
+        "cliente_id": 999999,
+        "nombre": "Debug",
+        "apellido": "Test",
+        "telefono": "000-000-0000"
+    }
+    socketio.emit("nueva_solicitud", payload, room=f"lavador_{lavador_id}")
+    return {"ok": True, "room": f"lavador_{lavador_id}"}
     
 if __name__ == '__main__':
     with app.app_context():
