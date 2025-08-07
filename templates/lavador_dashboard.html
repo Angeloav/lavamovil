@@ -92,6 +92,23 @@ function abrirChat() {
 <script>
 const socket = io();
 const lavadorId = {{ lavador.id }};
+
+socket.on("connect", () => {
+  console.log("🟢 Socket conectado:", socket.id);
+  socket.emit("unirse_sala_privada", { lavador_id: lavadorId });
+  console.log("📡 Intento de unión a sala: lavador_" + lavadorId);
+});
+
+socket.on("union_confirmada", (d) => {
+  console.log("✅ Unión confirmada:", d);
+  const n = document.getElementById("notificacion");
+  if (n) {
+    n.style.display = "block";
+    n.innerText = "Conectado a " + d.room;
+    setTimeout(() => { n.style.display = "none"; n.innerText = "¡Nueva solicitud recibida!"; }, 2000);
+  }
+});
+
 let clienteId = document.getElementById("clienteData").dataset.id;
 socket.emit("unirse_sala_privada", {
   lavador_id: lavadorId
