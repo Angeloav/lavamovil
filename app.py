@@ -989,6 +989,7 @@ def actualizar_ubicacion_lavador():
         return jsonify({"success": True})
 
     return jsonify({"error": "Lavador no encontrado"}), 404
+    
 @app.get("/debug_emit/<int:lavador_id>")
 def debug_emit(lavador_id):
     payload = {
@@ -1001,19 +1002,19 @@ def debug_emit(lavador_id):
     socketio.emit("nueva_solicitud", payload, room=f"lavador_{lavador_id}")
     return {"ok": True, "room": f"lavador_{lavador_id}"}
     
- @app.after_request
+@app.after_request
 def add_no_cache_headers(resp):
-    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0, private"]
+    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0, private"
     resp.headers["Pragma"] = "no-cache"
     resp.headers["Expires"] = "0"
     return resp
-    
- APP_VERSION = "2025-08-06-02"  # <-- súbele 1 si vuelves a desplegar
+
+APP_VERSION = "2025-08-06-02"  # <-- súbele 1 si vuelves a desplegar
 
 @app.get("/__version")
 def version():
     return {"version": APP_VERSION}
-  
+
 if __name__ == '__main__':
     with app.app_context():
         if not os.path.exists('lavamovil.db'):
